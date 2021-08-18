@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>state_signals API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>state_signals</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+import redis
+import platform
+import json
+import time
+import uuid
+import logging
+
+
+&#34;&#34;&#34;
+State/Event Signal Module
+
+Adds two new, simple-to-use objects:
+ - SignalExporter      (for publishing state signals and handling subscribers + responses)
+ - SignalResponder     (for receiving state signals, locking onto publishers, and publishing responses)
+
+Also provides two dataclass specifications:
+ - Signal              (state signal protocol definition)
+ - Response            (response protocol definition)
+
+Combining redis pubsub features with state signal + response protocols, 
+these additions make state signal publishing, subscribing, receiving, 
+and responding incredibly easy to integrate into any code.
+&#34;&#34;&#34;
+
+
+def _create_logger(
+    class_name: str, process_name: str, log_level: str
+) -&gt; logging.Logger:
+    &#34;&#34;&#34;
+    Creates and returns logging.Logger object for detailed logging.
+    Used by SignalExporter and SignalResponder.
+    &#34;&#34;&#34;
+    logger = logging.getLogger(class_name).getChild(process_name)
+    try:
+        logger.setLevel(log_level)
+        ch = logging.StreamHandler()
+        ch.setLevel(log_level)
+        formatter = logging.Formatter(
+            &#34;%(asctime)s - %(name)s - %(levelname)s - %(message)s&#34;
+        )
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+    except ValueError:
+        raise ValueError(&#34;Legal log levels: [DEBUG, INFO, WARNING, ERROR, CRITICAL]&#34;)
+    return logger
+
+
+class ResultCodes(Enum):
+    ALL_SUBS_SUCCESS = 0
+    SUB_FAILED = 1
+    MISSING_RESPONSE = 2
+
+
+@dataclass
+class Signal:
+    &#34;&#34;&#34;
+    Standard event signal protocol. All required fields, defaults, and type
+    restrictions are defined in this dataclass. Also includes a method for
+    converting object data to json string.
+    &#34;&#34;&#34;
+
+    publisher_id: str
+    process_name: str
+    event: str
+    runner_host: str
+    sample_no: int = -1
+    tag: str = &#34;No tag specified&#34;
+    metadata: Optional[Dict] = None
+
+    def __post_init__(self) -&gt; None:
+        &#34;&#34;&#34;
+        Checks all field types.
+        &#34;&#34;&#34;
+        for (name, field_type) in self.__annotations__.items():
+            if name == &#34;metadata&#34;:
+                field_type = field_type.__args__
+            if not isinstance(self.__dict__[name], field_type):
+                raise TypeError(
+                    f&#34;The field {name} should be type {field_type}, not {type(self.__dict__[name])}&#34;
+                )
+
+    def to_json_str(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;
+        Converts object data into json string.
+        &#34;&#34;&#34;
+        result: Dict[str, Any] = {
+            k: v
+            for k, v in self.__dict__.items()
+            if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
+            and not (k == &#34;metadata&#34; and v == None)
+        }
+        return json.dumps(result)
+
+
+@dataclass
+class Response:
+    &#34;&#34;&#34;
+    Standard signal response protocol. All required fields, defaults, and type
+    restrictions are defined in this dataclass. Also includes a method for 
+    converting object data to json string.
+    &#34;&#34;&#34;
+
+    responder_id: str
+    publisher_id: str
+    event: str
+    ras: Optional[int]
+
+    def __post_init__(self) -&gt; None:
+        &#34;&#34;&#34;
+        Checks all field types.
+        &#34;&#34;&#34;
+        for (name, field_type) in self.__annotations__.items():
+            if name == &#34;ras&#34;:
+                field_type = field_type.__args__
+            if not isinstance(self.__dict__[name], field_type):
+                raise TypeError(
+                    f&#34;The field {name} should be type {field_type}, not {type(self.__dict__[name])}&#34;
+                )
+
+    def to_json_str(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;
+        Converts object data into json string.
+        &#34;&#34;&#34;
+        result: Dict[str, Any] = {
+            k: v
+            for k, v in self.__dict__.items()
+            if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
+            and not (k == &#34;ras&#34; and v == None)
+        }
+        return json.dumps(result)
+
+
+class SignalExporter:
+    &#34;&#34;&#34;
+    A signal management object for tools that wish to publish event/state signals.
+    Also handles subscriber recording and response reading/awaiting. Uses the standard
+    signal protocol for all published messages. Easy-to-use interface for publishing
+    legal signals and handling responders.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        process_name: str,
+        redis_host: str = &#34;localhost&#34;,
+        redis_port: int = 6379,
+        runner_host: str = platform.node(),
+        log_level: str = &#34;INFO&#34;,
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Sets exporter object fields and generates unique publisher_id.
+        Allows for specification of redis host/port. Also allows runner
+        hostname to be inputted manually (otherwise will default to 
+        platform.node() value)
+        &#34;&#34;&#34;
+        self.logger = _create_logger(&#34;SignalExporter&#34;, process_name, log_level)
+        self.subs = []
+        self.proc_name = process_name
+        self.runner_host = runner_host
+        self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.init_listener = None
+        self.legal_events = None
+
+    def _sig_builder(
+        self, event: str, sample: int = -1, tag: str = None, metadata: Dict = None
+    ) -&gt; Signal:
+        &#34;&#34;&#34;
+        Build a signal data object based on exporter object fields,
+        as well as user-inputted fields. Returns the signal object.
+        &#34;&#34;&#34;
+        config = {
+            &#34;publisher_id&#34;: self.pub_id,
+            &#34;process_name&#34;: self.proc_name,
+            &#34;event&#34;: event,
+            &#34;runner_host&#34;: self.runner_host,
+        }
+        if sample:
+            config[&#34;sample_no&#34;] = sample
+        if tag:
+            config[&#34;tag&#34;] = tag
+        if metadata:
+            config[&#34;metadata&#34;] = metadata
+        sig = Signal(**config)
+        return sig
+
+    def _get_data_dict(self, response: Dict) -&gt; Dict:
+        &#34;&#34;&#34;
+        Returns response signal payload if a properly-formed
+        response is received. Otherwise return None.
+        &#34;&#34;&#34;
+        if not &#34;data&#34; in response:
+            self.logger.debug(f&#34;No data in this response message: {response}&#34;)
+            return None
+        try:
+            data = json.loads(response[&#34;data&#34;])
+        except ValueError:
+            return None
+        if (
+            &#34;responder_id&#34; not in data
+            or &#34;publisher_id&#34; not in data
+            or &#34;event&#34; not in data
+        ):
+            self.logger.debug(f&#34;Malformed response data found: {response}&#34;)
+            return None
+        return data
+
+    def _fetch_responders(self) -&gt; None:
+        &#34;&#34;&#34;
+        Start initialization response listener. Add respoder_ids from proper
+        responses to the subscriber list.
+        &#34;&#34;&#34;
+        subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
+
+        def _init_handler(item) -&gt; None:
+            data = self._get_data_dict(item)
+            if (
+                data
+                and data[&#34;event&#34;] == &#34;initialization&#34;
+                and data[&#34;publisher_id&#34;] == self.pub_id
+            ):
+                self.subs.append(data[&#34;responder_id&#34;])
+
+        subscriber.subscribe(**{&#34;event-signal-response&#34;: _init_handler})
+        self.init_listener = subscriber.run_in_thread()
+
+    def _check_subs(self, event: str) -&gt; Tuple[Any, List[int]]:
+        &#34;&#34;&#34;
+        Listen for responses from all registered subscribers. Return
+        listener, as well as value based on responders&#39; RAS codes.
+        &#34;&#34;&#34;
+        if not self.subs:
+            return None, [0]
+
+        to_check = set(self.subs)
+        subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
+        result_code_holder = [ResultCodes.ALL_SUBS_SUCCESS]
+
+        def _sub_handler(item: Dict) -&gt; None:
+            data = self._get_data_dict(item)
+            if data and data[&#34;publisher_id&#34;] == self.pub_id and data[&#34;event&#34;] == event:
+                if &#34;ras&#34; in data:
+                    if data[&#34;responder_id&#34;] not in to_check:
+                        self.logger.warning(
+                            f&#34;Got a response from tool &#39;{data[&#39;responder_id&#39;]}&#39; but it&#39;s not on the known subscribers list (or already responded for &#39;{event}&#39;). RAS: {data[&#39;ras&#39;]}&#34;
+                        )
+                    else:
+                        to_check.remove(data[&#34;responder_id&#34;])
+                        if data[&#34;ras&#34;] != 1:
+                            self.logger.warning(
+                                f&#34;Tool &#39;{data[&#39;responder_id&#39;]}&#39; returned bad response for event &#39;{event}&#39;, ras: {data[&#39;ras&#39;]}&#34;
+                            )
+                            result_code_holder[0] = ResultCodes.SUB_FAILED
+            if not to_check:
+                listener.stop()
+
+        subscriber.subscribe(**{&#34;event-signal-response&#34;: _sub_handler})
+        listener = subscriber.run_in_thread()
+        return listener, result_code_holder
+
+    def _valid_str_list(self, names: List[str]) -&gt; bool:
+        &#34;&#34;&#34;
+        Return true if input is a non-empty list of strings. Otherwise
+        return false.
+        &#34;&#34;&#34;
+        return (
+            bool(names)
+            and isinstance(names, list)
+            and all(isinstance(event, str) for event in names)
+        )
+
+    def publish_signal(
+        self,
+        event: str,
+        sample: int = -1,
+        tag: str = None,
+        metadata: Dict = None,
+        timeout: int = 20,
+    ) -&gt; int:
+        &#34;&#34;&#34;
+        Publish a legal event signal. Includes additional options to specify sample_no,
+        a tag, and any other additional metadata. Will then wait for responses from
+        subscribed responders (if any). The method will give up once the timeout period
+        is reached (default = 20s). Returns one of the below result codes based on
+        signal publish/response success.
+
+        RESULT CODES:
+        ALL_SUBS_SUCCESS = 0 = ALL SUBS RESPONDED WELL
+        SUB_FAILED = 1 = ONE OR MORE SUB RESPONDED BADLY
+        MISSING_RESPONE = 2 = NOT ALL SUBS RESPONDED
+        &#34;&#34;&#34;
+        if not isinstance(timeout, int):
+            raise TypeError(&#34;&#39;timeout&#39; arg must be an int value&#34;)
+
+        skip_check = False
+        if not self.init_listener or not self.init_listener.is_alive():
+            self.logger.warning(
+                &#34;Exporter is not initialized, not accepting subscribers and no event checking&#34;
+            )
+            skip_check = True
+
+        if event == &#34;initialization&#34;:
+            raise ValueError(
+                &#34;Please use the &#39;initialize()&#39; method for publishing &#39;initialization&#39; signals&#34;
+            )
+
+        if event == &#34;shutdown&#34;:
+            raise ValueError(
+                &#34;Please use the &#39;shutdown()&#39; method for &#39;shutdown&#39; signals&#34;
+            )
+
+        if not skip_check and not event in self.legal_events:
+            raise ValueError(
+                f&#34;Event {self.event} not one of legal events: {self.legal_events}&#34;
+            )
+
+        sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
+        sub_check, result_code_holder = self._check_subs(event)
+
+        self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+        self.logger.debug(f&#34;Signal published for event {event}&#34;)
+
+        counter = 0
+        while sub_check and sub_check.is_alive():
+            time.sleep(0.1)
+            counter += 1
+            if counter &gt;= timeout * 10:
+                self.logger.error(
+                    f&#34;Timeout after waiting {timeout} seconds for sub response&#34;
+                )
+                sub_check.stop()
+                return ResultCodes.MISSING_RESPONSE
+
+        return result_code_holder[0]
+
+    def initialize(
+        self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Publishes an initialization message. Starts a listener that reads responses
+        to the initialization message and adds responders to the subscriber list.
+        Sets list of legal event names for future signals, and also allows for optional
+        input of expected responders (subscribers) as well as a tag.
+        &#34;&#34;&#34;
+        if not self._valid_str_list(legal_events):
+            raise TypeError(&#34;&#39;legal_events&#39; arg must be a list of string event names&#34;)
+
+        if expected_resps:
+            if not self._valid_str_list(expected_resps):
+                raise TypeError(
+                    &#34;&#39;expected_hosts&#39; arg must be a list of string hostnames&#34;
+                )
+            for resp in expected_resps:
+                self.subs.append(resp)
+
+        self.legal_events = legal_events
+        sig = self._sig_builder(event=&#34;initialization&#34;, tag=tag)
+        self._fetch_responders()
+        self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+        self.logger.debug(&#34;Initialization successful!&#34;)
+
+    def shutdown(self, tag: str = None) -&gt; None:
+        &#34;&#34;&#34;
+        Shuts down initialization response listener (stops accepting subscribers).
+        Wipes the subscriber list and publishes a shutdown message.
+        &#34;&#34;&#34;
+        sig = self._sig_builder(event=&#34;shutdown&#34;, tag=tag)
+        self.init_listener.stop()
+        self.subs = []
+        self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+        self.logger.debug(&#34;Shutdown successful!&#34;)
+
+
+class SignalResponder:
+    &#34;&#34;&#34;
+    A signal management object for tools that wish to respond to event/state signals.
+    Can be used both for listening for signals as well as responding to them. Also
+    allows for locking onto specific tags/publisher_ids. Uses the standard signal
+    response protocol for all published messages.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        redis_host: str = &#34;localhost&#34;,
+        redis_port: int = 6379,
+        responder_name: str = platform.node(),
+        log_level=&#34;INFO&#34;,
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Sets exporter object fields and generates unique responder_id.
+        Allows for specification of redis host/port.
+        &#34;&#34;&#34;
+        self.logger = _create_logger(&#34;SignalResponder&#34;, responder_name, log_level)
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
+        self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
+        self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
+        self.locked_id = None
+        self.locked_tag = None
+
+    def _parse_signal(self, signal: Dict) -&gt; Dict:
+        &#34;&#34;&#34;
+        Validates received signal. Returns payload if valid.
+        Also applies tag/publisher_id filters if added.
+        &#34;&#34;&#34;
+        try:
+            data = json.loads(signal[&#34;data&#34;])
+        except ValueError:
+            self.logger.debug(f&#34;Received non-signal redis message {signal}&#34;)
+            return None
+        # FIXME - Replace below line, maybe with dataclasses.fields()?
+        check_set = set(
+            [
+                &#34;publisher_id&#34;,
+                &#34;process_name&#34;,
+                &#34;event&#34;,
+                &#34;runner_host&#34;,
+                &#34;sample_no&#34;,
+                &#34;tag&#34;,
+                &#34;metadata&#34;,
+            ]
+        )
+        if set(data.keys()) == check_set or check_set - set(data.keys()) == {
+            &#34;metadata&#34;
+        }:
+            return data
+        self.logger.warning(f&#34;Received malformed signal payload {signal}&#34;)
+        return None
+
+    def _check_target(self, payload: Dict) -&gt; bool:
+        &#34;&#34;&#34;
+        Checks if given signal payload matches the locked publisher_id/tag
+        (if any were provided). Returns True if the check passes or if no
+        locks were provided, and False otherwise.
+        &#34;&#34;&#34;
+        if (not self.locked_id or self.locked_id == payload[&#34;publisher_id&#34;]) and (
+            not self.locked_tag or self.locked_tag == payload[&#34;tag&#34;]
+        ):
+            return True
+        return False
+
+    def listen(self):
+        &#34;&#34;&#34;
+        Yield all legal published signals. If a specific tag/published_id
+        was locked, only signals with those matching values will be yielded.
+        &#34;&#34;&#34;
+        for item in self.subscriber.listen():
+            data = self._parse_signal(item)
+            if data and self._check_target(data):
+                yield data
+
+    def respond(self, publisher_id: str, event: str, ras: int = None) -&gt; None:
+        &#34;&#34;&#34;
+        Publish a legal response to a certain publisher_id&#39;s event signal.
+        Also allows for optional ras code to be added on (required for 
+        publisher acknowledgement, but not for initialization response).
+        &#34;&#34;&#34;
+        response = Response(self.responder_id, publisher_id, event, ras)
+        self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
+        self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)
+
+    def lock_id(self, publisher_id: str) -&gt; None:
+        &#34;&#34;&#34;
+        Lock onto a specific publisher_id. Only receive signals from the
+        chosen id.
+        &#34;&#34;&#34;
+        if isinstance(publisher_id, str):
+            self.locked_id == publisher_id
+            self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
+        else:
+            raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)
+
+    def lock_tag(self, tag: str) -&gt; None:
+        &#34;&#34;&#34;
+        Lock onto a specific tag. Only receive signals from the chosen tag.
+        &#34;&#34;&#34;
+        if isinstance(tag, str):
+            self.locked_tag == tag
+            self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
+        else:
+            raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="state_signals.Response"><code class="flex name class">
+<span>class <span class="ident">Response</span></span>
+<span>(</span><span>responder_id: str, publisher_id: str, event: str, ras: Optional[int])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Standard signal response protocol. All required fields, defaults, and type
+restrictions are defined in this dataclass. Also includes a method for
+converting object data to json string.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Response:
+    &#34;&#34;&#34;
+    Standard signal response protocol. All required fields, defaults, and type
+    restrictions are defined in this dataclass. Also includes a method for 
+    converting object data to json string.
+    &#34;&#34;&#34;
+
+    responder_id: str
+    publisher_id: str
+    event: str
+    ras: Optional[int]
+
+    def __post_init__(self) -&gt; None:
+        &#34;&#34;&#34;
+        Checks all field types.
+        &#34;&#34;&#34;
+        for (name, field_type) in self.__annotations__.items():
+            if name == &#34;ras&#34;:
+                field_type = field_type.__args__
+            if not isinstance(self.__dict__[name], field_type):
+                raise TypeError(
+                    f&#34;The field {name} should be type {field_type}, not {type(self.__dict__[name])}&#34;
+                )
+
+    def to_json_str(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;
+        Converts object data into json string.
+        &#34;&#34;&#34;
+        result: Dict[str, Any] = {
+            k: v
+            for k, v in self.__dict__.items()
+            if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
+            and not (k == &#34;ras&#34; and v == None)
+        }
+        return json.dumps(result)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="state_signals.Response.event"><code class="name">var <span class="ident">event</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Response.publisher_id"><code class="name">var <span class="ident">publisher_id</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Response.ras"><code class="name">var <span class="ident">ras</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Response.responder_id"><code class="name">var <span class="ident">responder_id</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="state_signals.Response.to_json_str"><code class="name flex">
+<span>def <span class="ident">to_json_str</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts object data into json string.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json_str(self) -&gt; Dict[str, Any]:
+    &#34;&#34;&#34;
+    Converts object data into json string.
+    &#34;&#34;&#34;
+    result: Dict[str, Any] = {
+        k: v
+        for k, v in self.__dict__.items()
+        if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
+        and not (k == &#34;ras&#34; and v == None)
+    }
+    return json.dumps(result)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="state_signals.ResultCodes"><code class="flex name class">
+<span>class <span class="ident">ResultCodes</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ResultCodes(Enum):
+    ALL_SUBS_SUCCESS = 0
+    SUB_FAILED = 1
+    MISSING_RESPONSE = 2</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="state_signals.ResultCodes.ALL_SUBS_SUCCESS"><code class="name">var <span class="ident">ALL_SUBS_SUCCESS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.ResultCodes.MISSING_RESPONSE"><code class="name">var <span class="ident">MISSING_RESPONSE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.ResultCodes.SUB_FAILED"><code class="name">var <span class="ident">SUB_FAILED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="state_signals.Signal"><code class="flex name class">
+<span>class <span class="ident">Signal</span></span>
+<span>(</span><span>publisher_id: str, process_name: str, event: str, runner_host: str, sample_no: int = -1, tag: str = 'No tag specified', metadata: Optional[Dict] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Standard event signal protocol. All required fields, defaults, and type
+restrictions are defined in this dataclass. Also includes a method for
+converting object data to json string.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Signal:
+    &#34;&#34;&#34;
+    Standard event signal protocol. All required fields, defaults, and type
+    restrictions are defined in this dataclass. Also includes a method for
+    converting object data to json string.
+    &#34;&#34;&#34;
+
+    publisher_id: str
+    process_name: str
+    event: str
+    runner_host: str
+    sample_no: int = -1
+    tag: str = &#34;No tag specified&#34;
+    metadata: Optional[Dict] = None
+
+    def __post_init__(self) -&gt; None:
+        &#34;&#34;&#34;
+        Checks all field types.
+        &#34;&#34;&#34;
+        for (name, field_type) in self.__annotations__.items():
+            if name == &#34;metadata&#34;:
+                field_type = field_type.__args__
+            if not isinstance(self.__dict__[name], field_type):
+                raise TypeError(
+                    f&#34;The field {name} should be type {field_type}, not {type(self.__dict__[name])}&#34;
+                )
+
+    def to_json_str(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;
+        Converts object data into json string.
+        &#34;&#34;&#34;
+        result: Dict[str, Any] = {
+            k: v
+            for k, v in self.__dict__.items()
+            if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
+            and not (k == &#34;metadata&#34; and v == None)
+        }
+        return json.dumps(result)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="state_signals.Signal.event"><code class="name">var <span class="ident">event</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Signal.metadata"><code class="name">var <span class="ident">metadata</span> : Optional[Dict]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Signal.process_name"><code class="name">var <span class="ident">process_name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Signal.publisher_id"><code class="name">var <span class="ident">publisher_id</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Signal.runner_host"><code class="name">var <span class="ident">runner_host</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Signal.sample_no"><code class="name">var <span class="ident">sample_no</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Signal.tag"><code class="name">var <span class="ident">tag</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="state_signals.Signal.to_json_str"><code class="name flex">
+<span>def <span class="ident">to_json_str</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts object data into json string.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json_str(self) -&gt; Dict[str, Any]:
+    &#34;&#34;&#34;
+    Converts object data into json string.
+    &#34;&#34;&#34;
+    result: Dict[str, Any] = {
+        k: v
+        for k, v in self.__dict__.items()
+        if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
+        and not (k == &#34;metadata&#34; and v == None)
+    }
+    return json.dumps(result)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="state_signals.SignalExporter"><code class="flex name class">
+<span>class <span class="ident">SignalExporter</span></span>
+<span>(</span><span>process_name: str, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = 'meyceoz.bos.csb', log_level: str = 'INFO')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A signal management object for tools that wish to publish event/state signals.
+Also handles subscriber recording and response reading/awaiting. Uses the standard
+signal protocol for all published messages. Easy-to-use interface for publishing
+legal signals and handling responders.</p>
+<p>Sets exporter object fields and generates unique publisher_id.
+Allows for specification of redis host/port. Also allows runner
+hostname to be inputted manually (otherwise will default to
+platform.node() value)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SignalExporter:
+    &#34;&#34;&#34;
+    A signal management object for tools that wish to publish event/state signals.
+    Also handles subscriber recording and response reading/awaiting. Uses the standard
+    signal protocol for all published messages. Easy-to-use interface for publishing
+    legal signals and handling responders.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        process_name: str,
+        redis_host: str = &#34;localhost&#34;,
+        redis_port: int = 6379,
+        runner_host: str = platform.node(),
+        log_level: str = &#34;INFO&#34;,
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Sets exporter object fields and generates unique publisher_id.
+        Allows for specification of redis host/port. Also allows runner
+        hostname to be inputted manually (otherwise will default to 
+        platform.node() value)
+        &#34;&#34;&#34;
+        self.logger = _create_logger(&#34;SignalExporter&#34;, process_name, log_level)
+        self.subs = []
+        self.proc_name = process_name
+        self.runner_host = runner_host
+        self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.init_listener = None
+        self.legal_events = None
+
+    def _sig_builder(
+        self, event: str, sample: int = -1, tag: str = None, metadata: Dict = None
+    ) -&gt; Signal:
+        &#34;&#34;&#34;
+        Build a signal data object based on exporter object fields,
+        as well as user-inputted fields. Returns the signal object.
+        &#34;&#34;&#34;
+        config = {
+            &#34;publisher_id&#34;: self.pub_id,
+            &#34;process_name&#34;: self.proc_name,
+            &#34;event&#34;: event,
+            &#34;runner_host&#34;: self.runner_host,
+        }
+        if sample:
+            config[&#34;sample_no&#34;] = sample
+        if tag:
+            config[&#34;tag&#34;] = tag
+        if metadata:
+            config[&#34;metadata&#34;] = metadata
+        sig = Signal(**config)
+        return sig
+
+    def _get_data_dict(self, response: Dict) -&gt; Dict:
+        &#34;&#34;&#34;
+        Returns response signal payload if a properly-formed
+        response is received. Otherwise return None.
+        &#34;&#34;&#34;
+        if not &#34;data&#34; in response:
+            self.logger.debug(f&#34;No data in this response message: {response}&#34;)
+            return None
+        try:
+            data = json.loads(response[&#34;data&#34;])
+        except ValueError:
+            return None
+        if (
+            &#34;responder_id&#34; not in data
+            or &#34;publisher_id&#34; not in data
+            or &#34;event&#34; not in data
+        ):
+            self.logger.debug(f&#34;Malformed response data found: {response}&#34;)
+            return None
+        return data
+
+    def _fetch_responders(self) -&gt; None:
+        &#34;&#34;&#34;
+        Start initialization response listener. Add respoder_ids from proper
+        responses to the subscriber list.
+        &#34;&#34;&#34;
+        subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
+
+        def _init_handler(item) -&gt; None:
+            data = self._get_data_dict(item)
+            if (
+                data
+                and data[&#34;event&#34;] == &#34;initialization&#34;
+                and data[&#34;publisher_id&#34;] == self.pub_id
+            ):
+                self.subs.append(data[&#34;responder_id&#34;])
+
+        subscriber.subscribe(**{&#34;event-signal-response&#34;: _init_handler})
+        self.init_listener = subscriber.run_in_thread()
+
+    def _check_subs(self, event: str) -&gt; Tuple[Any, List[int]]:
+        &#34;&#34;&#34;
+        Listen for responses from all registered subscribers. Return
+        listener, as well as value based on responders&#39; RAS codes.
+        &#34;&#34;&#34;
+        if not self.subs:
+            return None, [0]
+
+        to_check = set(self.subs)
+        subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
+        result_code_holder = [ResultCodes.ALL_SUBS_SUCCESS]
+
+        def _sub_handler(item: Dict) -&gt; None:
+            data = self._get_data_dict(item)
+            if data and data[&#34;publisher_id&#34;] == self.pub_id and data[&#34;event&#34;] == event:
+                if &#34;ras&#34; in data:
+                    if data[&#34;responder_id&#34;] not in to_check:
+                        self.logger.warning(
+                            f&#34;Got a response from tool &#39;{data[&#39;responder_id&#39;]}&#39; but it&#39;s not on the known subscribers list (or already responded for &#39;{event}&#39;). RAS: {data[&#39;ras&#39;]}&#34;
+                        )
+                    else:
+                        to_check.remove(data[&#34;responder_id&#34;])
+                        if data[&#34;ras&#34;] != 1:
+                            self.logger.warning(
+                                f&#34;Tool &#39;{data[&#39;responder_id&#39;]}&#39; returned bad response for event &#39;{event}&#39;, ras: {data[&#39;ras&#39;]}&#34;
+                            )
+                            result_code_holder[0] = ResultCodes.SUB_FAILED
+            if not to_check:
+                listener.stop()
+
+        subscriber.subscribe(**{&#34;event-signal-response&#34;: _sub_handler})
+        listener = subscriber.run_in_thread()
+        return listener, result_code_holder
+
+    def _valid_str_list(self, names: List[str]) -&gt; bool:
+        &#34;&#34;&#34;
+        Return true if input is a non-empty list of strings. Otherwise
+        return false.
+        &#34;&#34;&#34;
+        return (
+            bool(names)
+            and isinstance(names, list)
+            and all(isinstance(event, str) for event in names)
+        )
+
+    def publish_signal(
+        self,
+        event: str,
+        sample: int = -1,
+        tag: str = None,
+        metadata: Dict = None,
+        timeout: int = 20,
+    ) -&gt; int:
+        &#34;&#34;&#34;
+        Publish a legal event signal. Includes additional options to specify sample_no,
+        a tag, and any other additional metadata. Will then wait for responses from
+        subscribed responders (if any). The method will give up once the timeout period
+        is reached (default = 20s). Returns one of the below result codes based on
+        signal publish/response success.
+
+        RESULT CODES:
+        ALL_SUBS_SUCCESS = 0 = ALL SUBS RESPONDED WELL
+        SUB_FAILED = 1 = ONE OR MORE SUB RESPONDED BADLY
+        MISSING_RESPONE = 2 = NOT ALL SUBS RESPONDED
+        &#34;&#34;&#34;
+        if not isinstance(timeout, int):
+            raise TypeError(&#34;&#39;timeout&#39; arg must be an int value&#34;)
+
+        skip_check = False
+        if not self.init_listener or not self.init_listener.is_alive():
+            self.logger.warning(
+                &#34;Exporter is not initialized, not accepting subscribers and no event checking&#34;
+            )
+            skip_check = True
+
+        if event == &#34;initialization&#34;:
+            raise ValueError(
+                &#34;Please use the &#39;initialize()&#39; method for publishing &#39;initialization&#39; signals&#34;
+            )
+
+        if event == &#34;shutdown&#34;:
+            raise ValueError(
+                &#34;Please use the &#39;shutdown()&#39; method for &#39;shutdown&#39; signals&#34;
+            )
+
+        if not skip_check and not event in self.legal_events:
+            raise ValueError(
+                f&#34;Event {self.event} not one of legal events: {self.legal_events}&#34;
+            )
+
+        sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
+        sub_check, result_code_holder = self._check_subs(event)
+
+        self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+        self.logger.debug(f&#34;Signal published for event {event}&#34;)
+
+        counter = 0
+        while sub_check and sub_check.is_alive():
+            time.sleep(0.1)
+            counter += 1
+            if counter &gt;= timeout * 10:
+                self.logger.error(
+                    f&#34;Timeout after waiting {timeout} seconds for sub response&#34;
+                )
+                sub_check.stop()
+                return ResultCodes.MISSING_RESPONSE
+
+        return result_code_holder[0]
+
+    def initialize(
+        self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Publishes an initialization message. Starts a listener that reads responses
+        to the initialization message and adds responders to the subscriber list.
+        Sets list of legal event names for future signals, and also allows for optional
+        input of expected responders (subscribers) as well as a tag.
+        &#34;&#34;&#34;
+        if not self._valid_str_list(legal_events):
+            raise TypeError(&#34;&#39;legal_events&#39; arg must be a list of string event names&#34;)
+
+        if expected_resps:
+            if not self._valid_str_list(expected_resps):
+                raise TypeError(
+                    &#34;&#39;expected_hosts&#39; arg must be a list of string hostnames&#34;
+                )
+            for resp in expected_resps:
+                self.subs.append(resp)
+
+        self.legal_events = legal_events
+        sig = self._sig_builder(event=&#34;initialization&#34;, tag=tag)
+        self._fetch_responders()
+        self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+        self.logger.debug(&#34;Initialization successful!&#34;)
+
+    def shutdown(self, tag: str = None) -&gt; None:
+        &#34;&#34;&#34;
+        Shuts down initialization response listener (stops accepting subscribers).
+        Wipes the subscriber list and publishes a shutdown message.
+        &#34;&#34;&#34;
+        sig = self._sig_builder(event=&#34;shutdown&#34;, tag=tag)
+        self.init_listener.stop()
+        self.subs = []
+        self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+        self.logger.debug(&#34;Shutdown successful!&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="state_signals.SignalExporter.initialize"><code class="name flex">
+<span>def <span class="ident">initialize</span></span>(<span>self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Publishes an initialization message. Starts a listener that reads responses
+to the initialization message and adds responders to the subscriber list.
+Sets list of legal event names for future signals, and also allows for optional
+input of expected responders (subscribers) as well as a tag.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initialize(
+    self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None
+) -&gt; None:
+    &#34;&#34;&#34;
+    Publishes an initialization message. Starts a listener that reads responses
+    to the initialization message and adds responders to the subscriber list.
+    Sets list of legal event names for future signals, and also allows for optional
+    input of expected responders (subscribers) as well as a tag.
+    &#34;&#34;&#34;
+    if not self._valid_str_list(legal_events):
+        raise TypeError(&#34;&#39;legal_events&#39; arg must be a list of string event names&#34;)
+
+    if expected_resps:
+        if not self._valid_str_list(expected_resps):
+            raise TypeError(
+                &#34;&#39;expected_hosts&#39; arg must be a list of string hostnames&#34;
+            )
+        for resp in expected_resps:
+            self.subs.append(resp)
+
+    self.legal_events = legal_events
+    sig = self._sig_builder(event=&#34;initialization&#34;, tag=tag)
+    self._fetch_responders()
+    self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+    self.logger.debug(&#34;Initialization successful!&#34;)</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalExporter.publish_signal"><code class="name flex">
+<span>def <span class="ident">publish_signal</span></span>(<span>self, event: str, sample: int = -1, tag: str = None, metadata: Dict = None, timeout: int = 20) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Publish a legal event signal. Includes additional options to specify sample_no,
+a tag, and any other additional metadata. Will then wait for responses from
+subscribed responders (if any). The method will give up once the timeout period
+is reached (default = 20s). Returns one of the below result codes based on
+signal publish/response success.</p>
+<p>RESULT CODES:
+ALL_SUBS_SUCCESS = 0 = ALL SUBS RESPONDED WELL
+SUB_FAILED = 1 = ONE OR MORE SUB RESPONDED BADLY
+MISSING_RESPONE = 2 = NOT ALL SUBS RESPONDED</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def publish_signal(
+    self,
+    event: str,
+    sample: int = -1,
+    tag: str = None,
+    metadata: Dict = None,
+    timeout: int = 20,
+) -&gt; int:
+    &#34;&#34;&#34;
+    Publish a legal event signal. Includes additional options to specify sample_no,
+    a tag, and any other additional metadata. Will then wait for responses from
+    subscribed responders (if any). The method will give up once the timeout period
+    is reached (default = 20s). Returns one of the below result codes based on
+    signal publish/response success.
+
+    RESULT CODES:
+    ALL_SUBS_SUCCESS = 0 = ALL SUBS RESPONDED WELL
+    SUB_FAILED = 1 = ONE OR MORE SUB RESPONDED BADLY
+    MISSING_RESPONE = 2 = NOT ALL SUBS RESPONDED
+    &#34;&#34;&#34;
+    if not isinstance(timeout, int):
+        raise TypeError(&#34;&#39;timeout&#39; arg must be an int value&#34;)
+
+    skip_check = False
+    if not self.init_listener or not self.init_listener.is_alive():
+        self.logger.warning(
+            &#34;Exporter is not initialized, not accepting subscribers and no event checking&#34;
+        )
+        skip_check = True
+
+    if event == &#34;initialization&#34;:
+        raise ValueError(
+            &#34;Please use the &#39;initialize()&#39; method for publishing &#39;initialization&#39; signals&#34;
+        )
+
+    if event == &#34;shutdown&#34;:
+        raise ValueError(
+            &#34;Please use the &#39;shutdown()&#39; method for &#39;shutdown&#39; signals&#34;
+        )
+
+    if not skip_check and not event in self.legal_events:
+        raise ValueError(
+            f&#34;Event {self.event} not one of legal events: {self.legal_events}&#34;
+        )
+
+    sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
+    sub_check, result_code_holder = self._check_subs(event)
+
+    self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+    self.logger.debug(f&#34;Signal published for event {event}&#34;)
+
+    counter = 0
+    while sub_check and sub_check.is_alive():
+        time.sleep(0.1)
+        counter += 1
+        if counter &gt;= timeout * 10:
+            self.logger.error(
+                f&#34;Timeout after waiting {timeout} seconds for sub response&#34;
+            )
+            sub_check.stop()
+            return ResultCodes.MISSING_RESPONSE
+
+    return result_code_holder[0]</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalExporter.shutdown"><code class="name flex">
+<span>def <span class="ident">shutdown</span></span>(<span>self, tag: str = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Shuts down initialization response listener (stops accepting subscribers).
+Wipes the subscriber list and publishes a shutdown message.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shutdown(self, tag: str = None) -&gt; None:
+    &#34;&#34;&#34;
+    Shuts down initialization response listener (stops accepting subscribers).
+    Wipes the subscriber list and publishes a shutdown message.
+    &#34;&#34;&#34;
+    sig = self._sig_builder(event=&#34;shutdown&#34;, tag=tag)
+    self.init_listener.stop()
+    self.subs = []
+    self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
+    self.logger.debug(&#34;Shutdown successful!&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="state_signals.SignalResponder"><code class="flex name class">
+<span>class <span class="ident">SignalResponder</span></span>
+<span>(</span><span>redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = 'meyceoz.bos.csb', log_level='INFO')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A signal management object for tools that wish to respond to event/state signals.
+Can be used both for listening for signals as well as responding to them. Also
+allows for locking onto specific tags/publisher_ids. Uses the standard signal
+response protocol for all published messages.</p>
+<p>Sets exporter object fields and generates unique responder_id.
+Allows for specification of redis host/port.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SignalResponder:
+    &#34;&#34;&#34;
+    A signal management object for tools that wish to respond to event/state signals.
+    Can be used both for listening for signals as well as responding to them. Also
+    allows for locking onto specific tags/publisher_ids. Uses the standard signal
+    response protocol for all published messages.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        redis_host: str = &#34;localhost&#34;,
+        redis_port: int = 6379,
+        responder_name: str = platform.node(),
+        log_level=&#34;INFO&#34;,
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Sets exporter object fields and generates unique responder_id.
+        Allows for specification of redis host/port.
+        &#34;&#34;&#34;
+        self.logger = _create_logger(&#34;SignalResponder&#34;, responder_name, log_level)
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
+        self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
+        self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
+        self.locked_id = None
+        self.locked_tag = None
+
+    def _parse_signal(self, signal: Dict) -&gt; Dict:
+        &#34;&#34;&#34;
+        Validates received signal. Returns payload if valid.
+        Also applies tag/publisher_id filters if added.
+        &#34;&#34;&#34;
+        try:
+            data = json.loads(signal[&#34;data&#34;])
+        except ValueError:
+            self.logger.debug(f&#34;Received non-signal redis message {signal}&#34;)
+            return None
+        # FIXME - Replace below line, maybe with dataclasses.fields()?
+        check_set = set(
+            [
+                &#34;publisher_id&#34;,
+                &#34;process_name&#34;,
+                &#34;event&#34;,
+                &#34;runner_host&#34;,
+                &#34;sample_no&#34;,
+                &#34;tag&#34;,
+                &#34;metadata&#34;,
+            ]
+        )
+        if set(data.keys()) == check_set or check_set - set(data.keys()) == {
+            &#34;metadata&#34;
+        }:
+            return data
+        self.logger.warning(f&#34;Received malformed signal payload {signal}&#34;)
+        return None
+
+    def _check_target(self, payload: Dict) -&gt; bool:
+        &#34;&#34;&#34;
+        Checks if given signal payload matches the locked publisher_id/tag
+        (if any were provided). Returns True if the check passes or if no
+        locks were provided, and False otherwise.
+        &#34;&#34;&#34;
+        if (not self.locked_id or self.locked_id == payload[&#34;publisher_id&#34;]) and (
+            not self.locked_tag or self.locked_tag == payload[&#34;tag&#34;]
+        ):
+            return True
+        return False
+
+    def listen(self):
+        &#34;&#34;&#34;
+        Yield all legal published signals. If a specific tag/published_id
+        was locked, only signals with those matching values will be yielded.
+        &#34;&#34;&#34;
+        for item in self.subscriber.listen():
+            data = self._parse_signal(item)
+            if data and self._check_target(data):
+                yield data
+
+    def respond(self, publisher_id: str, event: str, ras: int = None) -&gt; None:
+        &#34;&#34;&#34;
+        Publish a legal response to a certain publisher_id&#39;s event signal.
+        Also allows for optional ras code to be added on (required for 
+        publisher acknowledgement, but not for initialization response).
+        &#34;&#34;&#34;
+        response = Response(self.responder_id, publisher_id, event, ras)
+        self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
+        self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)
+
+    def lock_id(self, publisher_id: str) -&gt; None:
+        &#34;&#34;&#34;
+        Lock onto a specific publisher_id. Only receive signals from the
+        chosen id.
+        &#34;&#34;&#34;
+        if isinstance(publisher_id, str):
+            self.locked_id == publisher_id
+            self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
+        else:
+            raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)
+
+    def lock_tag(self, tag: str) -&gt; None:
+        &#34;&#34;&#34;
+        Lock onto a specific tag. Only receive signals from the chosen tag.
+        &#34;&#34;&#34;
+        if isinstance(tag, str):
+            self.locked_tag == tag
+            self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
+        else:
+            raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="state_signals.SignalResponder.listen"><code class="name flex">
+<span>def <span class="ident">listen</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Yield all legal published signals. If a specific tag/published_id
+was locked, only signals with those matching values will be yielded.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def listen(self):
+    &#34;&#34;&#34;
+    Yield all legal published signals. If a specific tag/published_id
+    was locked, only signals with those matching values will be yielded.
+    &#34;&#34;&#34;
+    for item in self.subscriber.listen():
+        data = self._parse_signal(item)
+        if data and self._check_target(data):
+            yield data</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalResponder.lock_id"><code class="name flex">
+<span>def <span class="ident">lock_id</span></span>(<span>self, publisher_id: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lock onto a specific publisher_id. Only receive signals from the
+chosen id.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lock_id(self, publisher_id: str) -&gt; None:
+    &#34;&#34;&#34;
+    Lock onto a specific publisher_id. Only receive signals from the
+    chosen id.
+    &#34;&#34;&#34;
+    if isinstance(publisher_id, str):
+        self.locked_id == publisher_id
+        self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
+    else:
+        raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalResponder.lock_tag"><code class="name flex">
+<span>def <span class="ident">lock_tag</span></span>(<span>self, tag: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lock onto a specific tag. Only receive signals from the chosen tag.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lock_tag(self, tag: str) -&gt; None:
+    &#34;&#34;&#34;
+    Lock onto a specific tag. Only receive signals from the chosen tag.
+    &#34;&#34;&#34;
+    if isinstance(tag, str):
+        self.locked_tag == tag
+        self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
+    else:
+        raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalResponder.respond"><code class="name flex">
+<span>def <span class="ident">respond</span></span>(<span>self, publisher_id: str, event: str, ras: int = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Publish a legal response to a certain publisher_id's event signal.
+Also allows for optional ras code to be added on (required for
+publisher acknowledgement, but not for initialization response).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def respond(self, publisher_id: str, event: str, ras: int = None) -&gt; None:
+    &#34;&#34;&#34;
+    Publish a legal response to a certain publisher_id&#39;s event signal.
+    Also allows for optional ras code to be added on (required for 
+    publisher acknowledgement, but not for initialization response).
+    &#34;&#34;&#34;
+    response = Response(self.responder_id, publisher_id, event, ras)
+    self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
+    self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="state_signals.Response" href="#state_signals.Response">Response</a></code></h4>
+<ul class="">
+<li><code><a title="state_signals.Response.event" href="#state_signals.Response.event">event</a></code></li>
+<li><code><a title="state_signals.Response.publisher_id" href="#state_signals.Response.publisher_id">publisher_id</a></code></li>
+<li><code><a title="state_signals.Response.ras" href="#state_signals.Response.ras">ras</a></code></li>
+<li><code><a title="state_signals.Response.responder_id" href="#state_signals.Response.responder_id">responder_id</a></code></li>
+<li><code><a title="state_signals.Response.to_json_str" href="#state_signals.Response.to_json_str">to_json_str</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="state_signals.ResultCodes" href="#state_signals.ResultCodes">ResultCodes</a></code></h4>
+<ul class="">
+<li><code><a title="state_signals.ResultCodes.ALL_SUBS_SUCCESS" href="#state_signals.ResultCodes.ALL_SUBS_SUCCESS">ALL_SUBS_SUCCESS</a></code></li>
+<li><code><a title="state_signals.ResultCodes.MISSING_RESPONSE" href="#state_signals.ResultCodes.MISSING_RESPONSE">MISSING_RESPONSE</a></code></li>
+<li><code><a title="state_signals.ResultCodes.SUB_FAILED" href="#state_signals.ResultCodes.SUB_FAILED">SUB_FAILED</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="state_signals.Signal" href="#state_signals.Signal">Signal</a></code></h4>
+<ul class="two-column">
+<li><code><a title="state_signals.Signal.event" href="#state_signals.Signal.event">event</a></code></li>
+<li><code><a title="state_signals.Signal.metadata" href="#state_signals.Signal.metadata">metadata</a></code></li>
+<li><code><a title="state_signals.Signal.process_name" href="#state_signals.Signal.process_name">process_name</a></code></li>
+<li><code><a title="state_signals.Signal.publisher_id" href="#state_signals.Signal.publisher_id">publisher_id</a></code></li>
+<li><code><a title="state_signals.Signal.runner_host" href="#state_signals.Signal.runner_host">runner_host</a></code></li>
+<li><code><a title="state_signals.Signal.sample_no" href="#state_signals.Signal.sample_no">sample_no</a></code></li>
+<li><code><a title="state_signals.Signal.tag" href="#state_signals.Signal.tag">tag</a></code></li>
+<li><code><a title="state_signals.Signal.to_json_str" href="#state_signals.Signal.to_json_str">to_json_str</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="state_signals.SignalExporter" href="#state_signals.SignalExporter">SignalExporter</a></code></h4>
+<ul class="">
+<li><code><a title="state_signals.SignalExporter.initialize" href="#state_signals.SignalExporter.initialize">initialize</a></code></li>
+<li><code><a title="state_signals.SignalExporter.publish_signal" href="#state_signals.SignalExporter.publish_signal">publish_signal</a></code></li>
+<li><code><a title="state_signals.SignalExporter.shutdown" href="#state_signals.SignalExporter.shutdown">shutdown</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="state_signals.SignalResponder" href="#state_signals.SignalResponder">SignalResponder</a></code></h4>
+<ul class="">
+<li><code><a title="state_signals.SignalResponder.listen" href="#state_signals.SignalResponder.listen">listen</a></code></li>
+<li><code><a title="state_signals.SignalResponder.lock_id" href="#state_signals.SignalResponder.lock_id">lock_id</a></code></li>
+<li><code><a title="state_signals.SignalResponder.lock_tag" href="#state_signals.SignalResponder.lock_tag">lock_tag</a></code></li>
+<li><code><a title="state_signals.SignalResponder.respond" href="#state_signals.SignalResponder.respond">respond</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
