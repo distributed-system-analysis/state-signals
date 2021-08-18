@@ -11,12 +11,12 @@ authors = [
 
 readme = 'README.md'  # Markdown files are supported
 
-repository = "https://github.com/Maxusmusti/state-signals"
-homepage = "https://github.com/Maxusmusti/state-signals"
+repository = "https://github.com/distributed-system-analysis/state-signals"
+homepage = "https://github.com/distributed-system-analysis/state-signals"
 
 keywords = ['state', 'event', 'signal', 'publish', 'subscribe']
 
 [tool.poetry.dependencies]
-python = "~2.7 || ^3.2"  # Compatible python versions must be declared here
+python = "^3.6"  # Compatible python versions must be declared here
 redis = "^3.5"
 dataclasses = "^0.8"
