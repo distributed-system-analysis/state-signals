@@ -13,4 +13,4 @@ Combining redis pubsub features with state signal + response protocols,
 these additions make state signal publishing, subscribing, receiving, 
 and responding incredibly easy to integrate into any python code.
 
-See full documentation [https://distributed-system-analysis.github.io/state-signals/](here)
+See full documentation [here](https://distributed-system-analysis.github.io/state-signals/)
