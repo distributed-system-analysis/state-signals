@@ -14,3 +14,8 @@ these additions make state signal publishing, subscribing, receiving,
 and responding incredibly easy to integrate into any python code.
 
 See full documentation [here](https://distributed-system-analysis.github.io/state-signals/)
+
+# Installation
+The state-signal PyPi package is available [here](https://pypi.org/project/state-signals)
+
+To install, run `pip install state-signals`
