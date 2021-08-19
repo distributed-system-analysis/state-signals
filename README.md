@@ -20,16 +20,40 @@ The state-signals PyPI package is available [here](https://pypi.org/project/stat
 
 To install, run `pip install state-signals`
 
-# REQUIREMENTS
+# Requirements
 The use of this module requires the existence of an accessible redis server.
  - Redis can easily be installed with a `yum install redis` (or replace yum with package manager of choice).
 
 A redis server can be started with the `redis-server` command.
  - The default port is 6379 (also default for state-signals), but can be changed with `--port (port)`
  - A config file can also be used for greater control/detail `redis-server \path\to\config`
- - Example/default config available (here)[https://download.redis.io/redis-stable/redis.conf]
+ - Example config available [here](https://download.redis.io/redis-stable/redis.conf)
 
 See https://redis.io/ for more details and usage
 
-# PROTOCOL / BEHAVIORS
+# Protocol / Behaviors
 
+The `Signal` and `Response` dataclasses define the exact fields/format of signal and response payloads.
+
+Publishing, receiving, and responding mechanisms are all detailed in `SignalExporter` and `SignalResponder` documentation. Below are details on the subscribing/awaiting protocol.
+
+Accept Subscribers and Awaiting Responses:
+ - Using the `SignalExporter`, call an `exporter.initialize(legal_events, ...)`
+ - Initialization will start the subscriber listener and establish legal event names
+ - It will also publish an "initialization" state signal
+ - Responders can then respond to the "initialization" signal to be added to the list of subs
+    - Note: A responder can subscribe at any point, unless a "shutdown" signal has been published after the initialization
+ - The `SignalExporter` will now wait for (up until timeout) and read the responses of the subscribers after publishing any further signals with `exporter.publish_signal(event, ...)`
+ - When finished, calling `exporter.shutdown(...)` will stop the subscriber listener, wipe the subscriber list, and publish a "shutdown" signal
+    - This signal publish will NOT listen for responses
+
+Sending Responses
+ - Receiving signals and sending responses can be done with the `SignalResponder`
+ - To respond to a signal, simply use the `respond` method and pass in the `publisher_id` of the signal's publisher, and pass in the `event` being responded to.
+ - (COMING SOON) `srespond(signal, ...)`: A method where the user can simply pass in the received signal object they wish to respond to instead of the signal's id/event
+ - Responding to an "initialization" signal will subscribe the responder to that specific publisher, which will now await responses from the responder for any future signals published.
+    - NOTE: When responding to an "initialization" signal, a Response-Action-Success (RAS) code is not necessary
+    - For any future responses to that publisher's signals, an RAS code will be necessary, and will indicate to the publisher whether or not the responder was successful in acting upon the signal
+    - See documentation for more details on RAS codes
+
+See the [full documentation](https://distributed-system-analysis.github.io/state-signals/) for further details, options, and more

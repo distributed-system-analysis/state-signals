@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "state-signals"
-version = "0.1.4"
+version = "0.1.5"
 description = "Package for easy management of state/event signal publishing, subscribing, and responding"
 
 license = "GPL"
@@ -9,7 +9,7 @@ authors = [
     "Mustafa Eyceoz <meyceoz@redhat.com>"
 ]
 
-readme = 'README.md'  # Markdown files are supported
+readme = 'README.md'
 
 repository = "https://github.com/distributed-system-analysis/state-signals"
 homepage = "https://github.com/distributed-system-analysis/state-signals"
@@ -17,6 +17,6 @@ homepage = "https://github.com/distributed-system-analysis/state-signals"
 keywords = ['state', 'event', 'signal', 'publish', 'subscribe']
 
 [tool.poetry.dependencies]
-python = "^3.6"  # Compatible python versions must be declared here
+python = "^3.6"
 redis = "^3.5"
 dataclasses = "^0.8"
