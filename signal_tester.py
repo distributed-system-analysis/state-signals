@@ -6,11 +6,11 @@ responder = state_signals.SignalResponder(responder_name="fakeresp", log_level="
 def _listener():
     for signal in responder.listen():
         print(signal)
-        if "tag" in signal and signal["tag"] == "bad":
+        if signal.tag == "bad":
             ras = 0
         else:
             ras = 1
-        responder.respond(signal["publisher_id"], signal["event"], ras)
+        responder.respond(signal.publisher_id, signal.event, ras)
 init = Process(target=_listener)
 init.start()
 
