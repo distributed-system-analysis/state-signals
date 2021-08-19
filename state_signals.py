@@ -1,3 +1,22 @@
+"""
+State/Event Signal Module
+
+Adds two new, simple-to-use objects:
+
+   - SignalExporter      (for publishing state signals and handling subscribers + responses)  
+   - SignalResponder     (for receiving state signals, locking onto publishers, and publishing responses)
+
+Also provides two dataclass specifications:
+
+   - Signal              (state signal protocol payload definition)  
+   - Response            (response protocol payload definition)
+
+Combining redis pubsub features with state signal + response protocols, 
+these additions make state signal publishing, subscribing, receiving, 
+and responding incredibly easy to integrate into any code.
+"""
+
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Iterator, List, Optional, Tuple
@@ -7,23 +26,6 @@ import json
 import time
 import uuid
 import logging
-
-
-"""
-State/Event Signal Module
-
-Adds two new, simple-to-use objects:
- - SignalExporter      (for publishing state signals and handling subscribers + responses)
- - SignalResponder     (for receiving state signals, locking onto publishers, and publishing responses)
-
-Also provides two dataclass specifications:
- - Signal              (state signal protocol payload definition)
- - Response            (response protocol payload definition)
-
-Combining redis pubsub features with state signal + response protocols, 
-these additions make state signal publishing, subscribing, receiving, 
-and responding incredibly easy to integrate into any code.
-"""
 
 
 def _create_logger(
@@ -49,6 +51,10 @@ def _create_logger(
 
 
 class ResultCodes(Enum):
+    """
+    All potential result codes when publishing a signal. See the publish_signal
+    method under SignalExporter for more details.
+    """
     ALL_SUBS_SUCCESS = 0
     SUB_FAILED = 1
     MISSING_RESPONSE = 2
@@ -170,7 +176,7 @@ class SignalExporter:
         log_level: str = "INFO",
     ) -> None:
         """
-        Sets exporter object fields and generates unique publisher_id.
+        init: Sets exporter object fields and generates unique publisher_id.
         Allows for specification of redis host/port. Also allows runner
         hostname to be inputted manually (otherwise will default to 
         platform.node() value)
@@ -306,10 +312,11 @@ class SignalExporter:
         is reached (default = 20s). Returns one of the below result codes based on
         signal publish/response success.
 
-        RESULT CODES:
-        ALL_SUBS_SUCCESS = 0 = ALL SUBS RESPONDED WELL
-        SUB_FAILED = 1 = ONE OR MORE SUB RESPONDED BADLY
-        MISSING_RESPONE = 2 = NOT ALL SUBS RESPONDED
+        Result Codes:
+
+           - ALL_SUBS_SUCCESS = 0 = all subs responded well 
+           - SUB_FAILED = 1 = one or more sub responded badly  
+           - MISSING_RESPONE = 2 = not all subs responded
         """
         if not isinstance(timeout, int):
             raise TypeError("'timeout' arg must be an int value")
@@ -409,7 +416,7 @@ class SignalResponder:
         log_level="INFO",
     ) -> None:
         """
-        Sets exporter object fields and generates unique responder_id.
+        init: Sets responder object fields and generates unique responder_id.
         Allows for specification of redis host/port.
         """
         self.logger = _create_logger("SignalResponder", responder_name, log_level)
