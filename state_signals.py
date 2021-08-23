@@ -35,7 +35,7 @@ def _create_logger(
     Creates and returns logging.Logger object for detailed logging.
     Used by SignalExporter and SignalResponder.
     """
-    logger = logging.getLogger(class_name).getChild(process_name)
+    logger = logging.getLogger("state-signals").getChild(class_name).getChild(process_name)
     try:
         logger.setLevel(log_level)
         ch = logging.StreamHandler()
