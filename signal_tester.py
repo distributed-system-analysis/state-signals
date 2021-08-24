@@ -10,7 +10,8 @@ def _listener():
             ras = 0
         else:
             ras = 1
-        responder.respond(signal.publisher_id, signal.event, ras)
+        #responder.respond(signal.publisher_id, signal.event, ras)
+        responder.srespond(signal, ras)
 init = Process(target=_listener)
 init.start()
 

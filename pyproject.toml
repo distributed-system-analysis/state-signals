@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "state-signals"
-version = "0.1.5"
+version = "0.2.0"
 description = "Package for easy management of state/event signal publishing, subscribing, and responding"
 
 license = "GPL"

@@ -83,7 +83,9 @@ def _create_logger(
     Creates and returns logging.Logger object for detailed logging.
     Used by SignalExporter and SignalResponder.
     &#34;&#34;&#34;
-    logger = logging.getLogger(class_name).getChild(process_name)
+    logger = (
+        logging.getLogger(&#34;state-signals&#34;).getChild(class_name).getChild(process_name)
+    )
     try:
         logger.setLevel(log_level)
         ch = logging.StreamHandler()
@@ -103,6 +105,7 @@ class ResultCodes(Enum):
     All potential result codes when publishing a signal. See the publish_signal
     method under SignalExporter for more details.
     &#34;&#34;&#34;
+
     ALL_SUBS_SUCCESS = 0
     SUB_FAILED = 1
     MISSING_RESPONSE = 2
@@ -472,8 +475,8 @@ class SignalResponder:
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
         self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
-        self.locked_id = None
-        self.locked_tag = None
+        self._locked_id = None
+        self._locked_tag = None
 
     def _parse_signal(self, signal: Dict) -&gt; Dict:
         &#34;&#34;&#34;
@@ -510,8 +513,8 @@ class SignalResponder:
         (if any were provided). Returns True if the check passes or if no
         locks were provided, and False otherwise.
         &#34;&#34;&#34;
-        if (not self.locked_id or self.locked_id == payload[&#34;publisher_id&#34;]) and (
-            not self.locked_tag or self.locked_tag == payload[&#34;tag&#34;]
+        if (not self._locked_id or self._locked_id == payload[&#34;publisher_id&#34;]) and (
+            not self._locked_tag or self._locked_tag == payload[&#34;tag&#34;]
         ):
             return True
         return False
@@ -537,13 +540,22 @@ class SignalResponder:
         self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
         self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)
 
+    def srespond(self, signal: Signal, ras: int = None) -&gt; None:
+        &#34;&#34;&#34;
+        Publish a legal response to a given signal. Serves as a wrapper
+        for the respond method. Also allows for optional ras code to be
+        added on (required for publisher acknowledgement, but not for 
+        initialization response).
+        &#34;&#34;&#34;
+        self.respond(signal.publisher_id, signal.event, ras)
+
     def lock_id(self, publisher_id: str) -&gt; None:
         &#34;&#34;&#34;
         Lock onto a specific publisher_id. Only receive signals from the
         chosen id.
         &#34;&#34;&#34;
         if isinstance(publisher_id, str):
-            self.locked_id == publisher_id
+            self._locked_id == publisher_id
             self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
         else:
             raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)
@@ -553,10 +565,21 @@ class SignalResponder:
         Lock onto a specific tag. Only receive signals from the chosen tag.
         &#34;&#34;&#34;
         if isinstance(tag, str):
-            self.locked_tag == tag
+            self._locked_tag == tag
             self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
         else:
-            raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>
+            raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)
+
+    def unlock(self) -&gt; None:
+        &#34;&#34;&#34;
+        Releases both tag and publisher_id locks. Resume receiving signals
+        from all publisher_ids and tags.
+        &#34;&#34;&#34;
+        self.logger.debug(
+            f&#34;Released locks on tag &#39;{self._locked_tag}&#39; and published_id &#39;{self._locked_id}&#39;&#34;
+        )
+        self._locked_id = None
+        self._locked_tag = None</code></pre>
 </details>
 </section>
 <section>
@@ -705,6 +728,7 @@ method under SignalExporter for more details.</p></div>
     All potential result codes when publishing a signal. See the publish_signal
     method under SignalExporter for more details.
     &#34;&#34;&#34;
+
     ALL_SUBS_SUCCESS = 0
     SUB_FAILED = 1
     MISSING_RESPONSE = 2</code></pre>
@@ -1310,8 +1334,8 @@ Allows for specification of redis host/port.</p></div>
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
         self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
-        self.locked_id = None
-        self.locked_tag = None
+        self._locked_id = None
+        self._locked_tag = None
 
     def _parse_signal(self, signal: Dict) -&gt; Dict:
         &#34;&#34;&#34;
@@ -1348,8 +1372,8 @@ Allows for specification of redis host/port.</p></div>
         (if any were provided). Returns True if the check passes or if no
         locks were provided, and False otherwise.
         &#34;&#34;&#34;
-        if (not self.locked_id or self.locked_id == payload[&#34;publisher_id&#34;]) and (
-            not self.locked_tag or self.locked_tag == payload[&#34;tag&#34;]
+        if (not self._locked_id or self._locked_id == payload[&#34;publisher_id&#34;]) and (
+            not self._locked_tag or self._locked_tag == payload[&#34;tag&#34;]
         ):
             return True
         return False
@@ -1375,13 +1399,22 @@ Allows for specification of redis host/port.</p></div>
         self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
         self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)
 
+    def srespond(self, signal: Signal, ras: int = None) -&gt; None:
+        &#34;&#34;&#34;
+        Publish a legal response to a given signal. Serves as a wrapper
+        for the respond method. Also allows for optional ras code to be
+        added on (required for publisher acknowledgement, but not for 
+        initialization response).
+        &#34;&#34;&#34;
+        self.respond(signal.publisher_id, signal.event, ras)
+
     def lock_id(self, publisher_id: str) -&gt; None:
         &#34;&#34;&#34;
         Lock onto a specific publisher_id. Only receive signals from the
         chosen id.
         &#34;&#34;&#34;
         if isinstance(publisher_id, str):
-            self.locked_id == publisher_id
+            self._locked_id == publisher_id
             self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
         else:
             raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)
@@ -1391,10 +1424,21 @@ Allows for specification of redis host/port.</p></div>
         Lock onto a specific tag. Only receive signals from the chosen tag.
         &#34;&#34;&#34;
         if isinstance(tag, str):
-            self.locked_tag == tag
+            self._locked_tag == tag
             self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
         else:
-            raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>
+            raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)
+
+    def unlock(self) -&gt; None:
+        &#34;&#34;&#34;
+        Releases both tag and publisher_id locks. Resume receiving signals
+        from all publisher_ids and tags.
+        &#34;&#34;&#34;
+        self.logger.debug(
+            f&#34;Released locks on tag &#39;{self._locked_tag}&#39; and published_id &#39;{self._locked_id}&#39;&#34;
+        )
+        self._locked_id = None
+        self._locked_tag = None</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -1436,7 +1480,7 @@ chosen id.</p></div>
     chosen id.
     &#34;&#34;&#34;
     if isinstance(publisher_id, str):
-        self.locked_id == publisher_id
+        self._locked_id == publisher_id
         self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
     else:
         raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)</code></pre>
@@ -1456,7 +1500,7 @@ chosen id.</p></div>
     Lock onto a specific tag. Only receive signals from the chosen tag.
     &#34;&#34;&#34;
     if isinstance(tag, str):
-        self.locked_tag == tag
+        self._locked_tag == tag
         self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
     else:
         raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>
@@ -1482,6 +1526,50 @@ publisher acknowledgement, but not for initialization response).</p></div>
     response = Response(self.responder_id, publisher_id, event, ras)
     self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
     self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalResponder.srespond"><code class="name flex">
+<span>def <span class="ident">srespond</span></span>(<span>self, signal: <a title="state_signals.Signal" href="#state_signals.Signal">Signal</a>, ras: int = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Publish a legal response to a given signal. Serves as a wrapper
+for the respond method. Also allows for optional ras code to be
+added on (required for publisher acknowledgement, but not for
+initialization response).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def srespond(self, signal: Signal, ras: int = None) -&gt; None:
+    &#34;&#34;&#34;
+    Publish a legal response to a given signal. Serves as a wrapper
+    for the respond method. Also allows for optional ras code to be
+    added on (required for publisher acknowledgement, but not for 
+    initialization response).
+    &#34;&#34;&#34;
+    self.respond(signal.publisher_id, signal.event, ras)</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalResponder.unlock"><code class="name flex">
+<span>def <span class="ident">unlock</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Releases both tag and publisher_id locks. Resume receiving signals
+from all publisher_ids and tags.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unlock(self) -&gt; None:
+    &#34;&#34;&#34;
+    Releases both tag and publisher_id locks. Resume receiving signals
+    from all publisher_ids and tags.
+    &#34;&#34;&#34;
+    self.logger.debug(
+        f&#34;Released locks on tag &#39;{self._locked_tag}&#39; and published_id &#39;{self._locked_id}&#39;&#34;
+    )
+    self._locked_id = None
+    self._locked_tag = None</code></pre>
 </details>
 </dd>
 </dl>
@@ -1538,11 +1626,13 @@ publisher acknowledgement, but not for initialization response).</p></div>
 </li>
 <li>
 <h4><code><a title="state_signals.SignalResponder" href="#state_signals.SignalResponder">SignalResponder</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="state_signals.SignalResponder.listen" href="#state_signals.SignalResponder.listen">listen</a></code></li>
 <li><code><a title="state_signals.SignalResponder.lock_id" href="#state_signals.SignalResponder.lock_id">lock_id</a></code></li>
 <li><code><a title="state_signals.SignalResponder.lock_tag" href="#state_signals.SignalResponder.lock_tag">lock_tag</a></code></li>
 <li><code><a title="state_signals.SignalResponder.respond" href="#state_signals.SignalResponder.respond">respond</a></code></li>
+<li><code><a title="state_signals.SignalResponder.srespond" href="#state_signals.SignalResponder.srespond">srespond</a></code></li>
+<li><code><a title="state_signals.SignalResponder.unlock" href="#state_signals.SignalResponder.unlock">unlock</a></code></li>
 </ul>
 </li>
 </ul>

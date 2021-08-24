@@ -35,7 +35,9 @@ def _create_logger(
     Creates and returns logging.Logger object for detailed logging.
     Used by SignalExporter and SignalResponder.
     """
-    logger = logging.getLogger("state-signals").getChild(class_name).getChild(process_name)
+    logger = (
+        logging.getLogger("state-signals").getChild(class_name).getChild(process_name)
+    )
     try:
         logger.setLevel(log_level)
         ch = logging.StreamHandler()
@@ -55,6 +57,7 @@ class ResultCodes(Enum):
     All potential result codes when publishing a signal. See the publish_signal
     method under SignalExporter for more details.
     """
+
     ALL_SUBS_SUCCESS = 0
     SUB_FAILED = 1
     MISSING_RESPONSE = 2
@@ -424,8 +427,8 @@ class SignalResponder:
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe("event-signal-pubsub")
         self.responder_id = responder_name + "-" + str(uuid.uuid4()) + "-resp"
-        self.locked_id = None
-        self.locked_tag = None
+        self._locked_id = None
+        self._locked_tag = None
 
     def _parse_signal(self, signal: Dict) -> Dict:
         """
@@ -462,8 +465,8 @@ class SignalResponder:
         (if any were provided). Returns True if the check passes or if no
         locks were provided, and False otherwise.
         """
-        if (not self.locked_id or self.locked_id == payload["publisher_id"]) and (
-            not self.locked_tag or self.locked_tag == payload["tag"]
+        if (not self._locked_id or self._locked_id == payload["publisher_id"]) and (
+            not self._locked_tag or self._locked_tag == payload["tag"]
         ):
             return True
         return False
@@ -489,13 +492,22 @@ class SignalResponder:
         self.redis.publish("event-signal-response", response.to_json_str())
         self.logger.debug(f"Published response for event {event} from {publisher_id}")
 
+    def srespond(self, signal: Signal, ras: int = None) -> None:
+        """
+        Publish a legal response to a given signal. Serves as a wrapper
+        for the respond method. Also allows for optional ras code to be
+        added on (required for publisher acknowledgement, but not for 
+        initialization response).
+        """
+        self.respond(signal.publisher_id, signal.event, ras)
+
     def lock_id(self, publisher_id: str) -> None:
         """
         Lock onto a specific publisher_id. Only receive signals from the
         chosen id.
         """
         if isinstance(publisher_id, str):
-            self.locked_id == publisher_id
+            self._locked_id == publisher_id
             self.logger.debug(f"Locked onto id: {publisher_id}")
         else:
             raise TypeError("Unsuccessful lock, 'publisher_id' must be type str")
@@ -505,8 +517,18 @@ class SignalResponder:
         Lock onto a specific tag. Only receive signals from the chosen tag.
         """
         if isinstance(tag, str):
-            self.locked_tag == tag
+            self._locked_tag == tag
             self.logger.debug(f"Locked onto tag: {tag}")
         else:
             raise TypeError("Unsuccessful lock, 'tag' must be type str")
 
+    def unlock(self) -> None:
+        """
+        Releases both tag and publisher_id locks. Resume receiving signals
+        from all publisher_ids and tags.
+        """
+        self.logger.debug(
+            f"Released locks on tag '{self._locked_tag}' and published_id '{self._locked_id}'"
+        )
+        self._locked_id = None
+        self._locked_tag = None

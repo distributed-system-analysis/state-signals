@@ -50,7 +50,7 @@ Accept Subscribers and Awaiting Responses:
 Sending Responses
  - Receiving signals and sending responses can be done with the `SignalResponder`
  - To respond to a signal, simply use the `respond` method and pass in the `publisher_id` of the signal's publisher, and pass in the `event` being responded to.
- - (COMING SOON) `srespond(signal, ...)`: A method where the user can simply pass in the received signal object they wish to respond to instead of the signal's id/event
+ - (NEW IN v0.2.0) `srespond(signal, ...)`: A method where the user can simply pass in the received signal object they wish to respond to instead of the signal's id/event
  - Responding to an "initialization" signal will subscribe the responder to that specific publisher, which will now await responses from the responder for any future signals published.
     - NOTE: When responding to an "initialization" signal, a Response-Action-Success (RAS) code is not necessary
     - For any future responses to that publisher's signals, an RAS code will be necessary, and will indicate to the publisher whether or not the responder was successful in acting upon the signal
