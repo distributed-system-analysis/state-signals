@@ -1,4 +1,4 @@
-import state_signals
+from .. import state_signals
 import subprocess
 import time
 from multiprocessing import Process
