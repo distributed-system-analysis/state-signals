@@ -1,4 +1,12 @@
-from .. import state_signals
+from pathlib import Path
+parent = Path(__file__).resolve().parents[1]
+print(parent)
+
+import sys
+sys.path.append(str(parent))
+print(sys.path)
+
+import state_signals
 import subprocess
 import time
 from multiprocessing import Process

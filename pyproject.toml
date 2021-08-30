@@ -19,4 +19,4 @@ keywords = ['state', 'event', 'signal', 'publish', 'subscribe']
 [tool.poetry.dependencies]
 python = "^3.6"
 redis = "^3.5"
-dataclasses = "^0.8"
+dataclasses = "^0.6"
