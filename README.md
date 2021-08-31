@@ -57,3 +57,20 @@ Sending Responses
     - See documentation for more details on RAS codes
 
 See the [full documentation](https://distributed-system-analysis.github.io/state-signals/) for further details, options, and more
+
+# Development
+
+Formatting
+ - For formatting, get black v19.10b0 via `pip install black==19.10b0`
+ - To check any modified python files, run `black --check (file)`
+ - To check the entire repo, run `black --check .` from the top-level
+ - To auto-format all python code, remove the `--check` option
+
+Testing
+ - Testing is done with pytest
+ - Run a `pip install` for both `pytest` and `pytest-dependency`
+ - To run the tests, run `pytest -v` from the top-level
+ - Any new test functions/scripts can be added into the `tests` folder
+ - NOTE: You will need to run a local `redis-server` for the tests to pass
+
+ Both formatting checks and tests must pass for GH Actions to approve a commit
