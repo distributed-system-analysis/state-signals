@@ -18,7 +18,7 @@ and responding incredibly easy to integrate into any code.
 
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 import redis
 import platform
@@ -52,7 +52,7 @@ def _create_logger(
     return logger
 
 
-class ResultCodes(Enum):
+class ResultCodes(IntEnum):
     """
     All potential result codes when publishing a signal. See the publish_signal
     method under SignalExporter for more details.

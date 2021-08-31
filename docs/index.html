@@ -66,7 +66,7 @@ and responding incredibly easy to integrate into any code.
 
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 import redis
 import platform
@@ -100,7 +100,7 @@ def _create_logger(
     return logger
 
 
-class ResultCodes(Enum):
+class ResultCodes(IntEnum):
     &#34;&#34;&#34;
     All potential result codes when publishing a signal. See the publish_signal
     method under SignalExporter for more details.
@@ -723,7 +723,7 @@ method under SignalExporter for more details.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ResultCodes(Enum):
+<pre><code class="python">class ResultCodes(IntEnum):
     &#34;&#34;&#34;
     All potential result codes when publishing a signal. See the publish_signal
     method under SignalExporter for more details.
@@ -735,6 +735,8 @@ method under SignalExporter for more details.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li>enum.IntEnum</li>
+<li>builtins.int</li>
 <li>enum.Enum</li>
 </ul>
 <h3>Class variables</h3>
