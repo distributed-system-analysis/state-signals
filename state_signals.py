@@ -319,7 +319,7 @@ class SignalExporter:
 
            - ALL_SUBS_SUCCESS = 0 = all subs responded well 
            - SUB_FAILED = 1 = one or more sub responded badly  
-           - MISSING_RESPONE = 2 = not all subs responded
+           - MISSING_RESPONSE = 2 = not all subs responded
         """
         if not isinstance(timeout, int):
             raise TypeError("'timeout' arg must be an int value")

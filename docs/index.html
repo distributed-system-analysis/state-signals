@@ -367,7 +367,7 @@ class SignalExporter:
 
            - ALL_SUBS_SUCCESS = 0 = all subs responded well 
            - SUB_FAILED = 1 = one or more sub responded badly  
-           - MISSING_RESPONE = 2 = not all subs responded
+           - MISSING_RESPONSE = 2 = not all subs responded
         &#34;&#34;&#34;
         if not isinstance(timeout, int):
             raise TypeError(&#34;&#39;timeout&#39; arg must be an int value&#34;)
@@ -891,7 +891,7 @@ method for converting object data to json string.</p>
 </dd>
 <dt id="state_signals.SignalExporter"><code class="flex name class">
 <span>class <span class="ident">SignalExporter</span></span>
-<span>(</span><span>process_name: str, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = 'meyceoz.bos.csb', log_level: str = 'INFO')</span>
+<span>(</span><span>process_name: str, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = platform.node(), log_level: str = 'INFO')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A signal management object for tools that wish to publish event/state signals.
@@ -1063,7 +1063,7 @@ platform.node() value)</p></div>
 
            - ALL_SUBS_SUCCESS = 0 = all subs responded well 
            - SUB_FAILED = 1 = one or more sub responded badly  
-           - MISSING_RESPONE = 2 = not all subs responded
+           - MISSING_RESPONSE = 2 = not all subs responded
         &#34;&#34;&#34;
         if not isinstance(timeout, int):
             raise TypeError(&#34;&#39;timeout&#39; arg must be an int value&#34;)
@@ -1201,7 +1201,7 @@ signal publish/response success.</p>
 <li>ALL_SUBS_SUCCESS = 0 = all subs responded well </li>
 <li>SUB_FAILED = 1 = one or more sub responded badly
 </li>
-<li>MISSING_RESPONE = 2 = not all subs responded</li>
+<li>MISSING_RESPONSE = 2 = not all subs responded</li>
 </ul></div>
 <details class="source">
 <summary>
@@ -1226,7 +1226,7 @@ signal publish/response success.</p>
 
        - ALL_SUBS_SUCCESS = 0 = all subs responded well 
        - SUB_FAILED = 1 = one or more sub responded badly  
-       - MISSING_RESPONE = 2 = not all subs responded
+       - MISSING_RESPONSE = 2 = not all subs responded
     &#34;&#34;&#34;
     if not isinstance(timeout, int):
         raise TypeError(&#34;&#39;timeout&#39; arg must be an int value&#34;)
@@ -1299,7 +1299,7 @@ Wipes the subscriber list and publishes a shutdown message.</p></div>
 </dd>
 <dt id="state_signals.SignalResponder"><code class="flex name class">
 <span>class <span class="ident">SignalResponder</span></span>
-<span>(</span><span>redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = 'meyceoz.bos.csb', log_level='INFO')</span>
+<span>(</span><span>redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = platform.node(), log_level='INFO')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A signal management object for tools that wish to respond to event/state signals.
