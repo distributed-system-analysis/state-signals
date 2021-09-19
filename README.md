@@ -56,6 +56,12 @@ Sending Responses
     - For any future responses to that publisher's signals, an RAS code will be necessary, and will indicate to the publisher whether or not the responder was successful in acting upon the signal
     - See documentation for more details on RAS codes
 
+Initialization and Subscribing:
+![Initialization and Subscribing](imgs/signalsub.png)
+
+Publishing, Awaiting, and Responding:
+![Publishing, Awaiting, and Responding](imgs/awaitresp.png)
+
 See the [full documentation](https://distributed-system-analysis.github.io/state-signals/) for further details, options, and more
 
 # Development
