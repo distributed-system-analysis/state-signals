@@ -555,7 +555,7 @@ class SignalResponder:
         chosen id.
         &#34;&#34;&#34;
         if isinstance(publisher_id, str):
-            self._locked_id == publisher_id
+            self._locked_id = publisher_id
             self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
         else:
             raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)
@@ -565,7 +565,7 @@ class SignalResponder:
         Lock onto a specific tag. Only receive signals from the chosen tag.
         &#34;&#34;&#34;
         if isinstance(tag, str):
-            self._locked_tag == tag
+            self._locked_tag = tag
             self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
         else:
             raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)
@@ -1416,7 +1416,7 @@ Allows for specification of redis host/port.</p></div>
         chosen id.
         &#34;&#34;&#34;
         if isinstance(publisher_id, str):
-            self._locked_id == publisher_id
+            self._locked_id = publisher_id
             self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
         else:
             raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)
@@ -1426,7 +1426,7 @@ Allows for specification of redis host/port.</p></div>
         Lock onto a specific tag. Only receive signals from the chosen tag.
         &#34;&#34;&#34;
         if isinstance(tag, str):
-            self._locked_tag == tag
+            self._locked_tag = tag
             self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
         else:
             raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)
@@ -1482,7 +1482,7 @@ chosen id.</p></div>
     chosen id.
     &#34;&#34;&#34;
     if isinstance(publisher_id, str):
-        self._locked_id == publisher_id
+        self._locked_id = publisher_id
         self.logger.debug(f&#34;Locked onto id: {publisher_id}&#34;)
     else:
         raise TypeError(&#34;Unsuccessful lock, &#39;publisher_id&#39; must be type str&#34;)</code></pre>
@@ -1502,7 +1502,7 @@ chosen id.</p></div>
     Lock onto a specific tag. Only receive signals from the chosen tag.
     &#34;&#34;&#34;
     if isinstance(tag, str):
-        self._locked_tag == tag
+        self._locked_tag = tag
         self.logger.debug(f&#34;Locked onto tag: {tag}&#34;)
     else:
         raise TypeError(&#34;Unsuccessful lock, &#39;tag&#39; must be type str&#34;)</code></pre>

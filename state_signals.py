@@ -507,7 +507,7 @@ class SignalResponder:
         chosen id.
         """
         if isinstance(publisher_id, str):
-            self._locked_id == publisher_id
+            self._locked_id = publisher_id
             self.logger.debug(f"Locked onto id: {publisher_id}")
         else:
             raise TypeError("Unsuccessful lock, 'publisher_id' must be type str")
@@ -517,7 +517,7 @@ class SignalResponder:
         Lock onto a specific tag. Only receive signals from the chosen tag.
         """
         if isinstance(tag, str):
-            self._locked_tag == tag
+            self._locked_tag = tag
             self.logger.debug(f"Locked onto tag: {tag}")
         else:
             raise TypeError("Unsuccessful lock, 'tag' must be type str")
