@@ -391,6 +391,33 @@ class SignalExporter:
         self.redis.publish(channel="event-signal-pubsub", message=sig.to_json_str())
         self.logger.debug("Initialization successful!")
 
+    def initialize_and_wait(
+        self,
+        await_sub_count: int,
+        legal_events: List[str],
+        tag: str = None,
+        expected_resps: List[str] = None,
+        timeout: int = 60,
+    ) -> int:
+        """
+        Calls the SignalExporter's initialize() method, and awaits a specified
+        number of subscribers. Also includes an optional timeout. Returns 0 if
+        sub(s) received, 1 if timed-out (or hangs if no timeout).
+        """
+        self.initialize(
+            legal_events=legal_events, tag=tag, expected_resps=expected_resps
+        )
+        counter = 0
+        while len(self.subs) < await_sub_count:
+            time.sleep(0.1)
+            counter += 1
+            if counter >= timeout * 10:
+                self.logger.error(
+                    f"Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}"
+                )
+                return 1
+        return 0
+
     def shutdown(self, tag: str = None) -> None:
         """
         Shuts down initialization response listener (stops accepting subscribers).

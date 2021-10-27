@@ -31,7 +31,9 @@ resp_proc = Process(target=_listener, args=(responder,), daemon=True)
 
 def _init():
     resp_proc.start()
-    sig_ex.initialize(legal_events=["benchmark-start", "benchmark-stop"])
+    return sig_ex.initialize_and_wait(
+        1, legal_events=["benchmark-start", "benchmark-stop"]
+    )
 
 
 def _shutdown():
@@ -44,9 +46,9 @@ def _cleanup():
 
 @pytest.mark.dependency()
 def test_init():
-    _init()
+    sub_check = _init()
     assert sig_ex.init_listener.is_alive()
-    time.sleep(1)
+    assert sub_check == 0
     assert sig_ex.subs
 
 

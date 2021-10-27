@@ -439,6 +439,33 @@ class SignalExporter:
         self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
         self.logger.debug(&#34;Initialization successful!&#34;)
 
+    def initialize_and_wait(
+        self,
+        await_sub_count: int,
+        legal_events: List[str],
+        tag: str = None,
+        expected_resps: List[str] = None,
+        timeout: int = 60,
+    ) -&gt; int:
+        &#34;&#34;&#34;
+        Calls the SignalExporter&#39;s initialize() method, and awaits a specified
+        number of subscribers. Also includes an optional timeout. Returns 0 if
+        sub(s) received, 1 if timed-out (or hangs if no timeout).
+        &#34;&#34;&#34;
+        self.initialize(
+            legal_events=legal_events, tag=tag, expected_resps=expected_resps
+        )
+        counter = 0
+        while len(self.subs) &lt; await_sub_count:
+            time.sleep(0.1)
+            counter += 1
+            if counter &gt;= timeout * 10:
+                self.logger.error(
+                    f&#34;Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}&#34;
+                )
+                return 1
+        return 0
+
     def shutdown(self, tag: str = None) -&gt; None:
         &#34;&#34;&#34;
         Shuts down initialization response listener (stops accepting subscribers).
@@ -1135,6 +1162,33 @@ platform.node() value)</p></div>
         self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
         self.logger.debug(&#34;Initialization successful!&#34;)
 
+    def initialize_and_wait(
+        self,
+        await_sub_count: int,
+        legal_events: List[str],
+        tag: str = None,
+        expected_resps: List[str] = None,
+        timeout: int = 60,
+    ) -&gt; int:
+        &#34;&#34;&#34;
+        Calls the SignalExporter&#39;s initialize() method, and awaits a specified
+        number of subscribers. Also includes an optional timeout. Returns 0 if
+        sub(s) received, 1 if timed-out (or hangs if no timeout).
+        &#34;&#34;&#34;
+        self.initialize(
+            legal_events=legal_events, tag=tag, expected_resps=expected_resps
+        )
+        counter = 0
+        while len(self.subs) &lt; await_sub_count:
+            time.sleep(0.1)
+            counter += 1
+            if counter &gt;= timeout * 10:
+                self.logger.error(
+                    f&#34;Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}&#34;
+                )
+                return 1
+        return 0
+
     def shutdown(self, tag: str = None) -&gt; None:
         &#34;&#34;&#34;
         Shuts down initialization response listener (stops accepting subscribers).
@@ -1185,6 +1239,45 @@ input of expected responders (subscribers) as well as a tag.</p></div>
     self._fetch_responders()
     self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
     self.logger.debug(&#34;Initialization successful!&#34;)</code></pre>
+</details>
+</dd>
+<dt id="state_signals.SignalExporter.initialize_and_wait"><code class="name flex">
+<span>def <span class="ident">initialize_and_wait</span></span>(<span>self, await_sub_count: int, legal_events: List[str], tag: str = None, expected_resps: List[str] = None, timeout: int = 60) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calls the SignalExporter's initialize() method, and awaits a specified
+number of subscribers. Also includes an optional timeout. Returns 0 if
+sub(s) received, 1 if timed-out (or hangs if no timeout).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initialize_and_wait(
+    self,
+    await_sub_count: int,
+    legal_events: List[str],
+    tag: str = None,
+    expected_resps: List[str] = None,
+    timeout: int = 60,
+) -&gt; int:
+    &#34;&#34;&#34;
+    Calls the SignalExporter&#39;s initialize() method, and awaits a specified
+    number of subscribers. Also includes an optional timeout. Returns 0 if
+    sub(s) received, 1 if timed-out (or hangs if no timeout).
+    &#34;&#34;&#34;
+    self.initialize(
+        legal_events=legal_events, tag=tag, expected_resps=expected_resps
+    )
+    counter = 0
+    while len(self.subs) &lt; await_sub_count:
+        time.sleep(0.1)
+        counter += 1
+        if counter &gt;= timeout * 10:
+            self.logger.error(
+                f&#34;Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}&#34;
+            )
+            return 1
+    return 0</code></pre>
 </details>
 </dd>
 <dt id="state_signals.SignalExporter.publish_signal"><code class="name flex">
@@ -1622,6 +1715,7 @@ from all publisher_ids and tags.</p></div>
 <h4><code><a title="state_signals.SignalExporter" href="#state_signals.SignalExporter">SignalExporter</a></code></h4>
 <ul class="">
 <li><code><a title="state_signals.SignalExporter.initialize" href="#state_signals.SignalExporter.initialize">initialize</a></code></li>
+<li><code><a title="state_signals.SignalExporter.initialize_and_wait" href="#state_signals.SignalExporter.initialize_and_wait">initialize_and_wait</a></code></li>
 <li><code><a title="state_signals.SignalExporter.publish_signal" href="#state_signals.SignalExporter.publish_signal">publish_signal</a></code></li>
 <li><code><a title="state_signals.SignalExporter.shutdown" href="#state_signals.SignalExporter.shutdown">shutdown</a></code></li>
 </ul>
