@@ -129,20 +129,22 @@ class Response:
         - ras: Response Action Success code  
             - Whether or not the responding process successfully processed/acted upon the signal  
             - 1 = successful, 0 (or other) = unsuccessful  
-            - Not needed when not subscribed or responding to initialization  
+            - Not needed when not subscribed or responding to initialization
+        - message: Optional string message for further detail 
     """
 
     responder_id: str
     publisher_id: str
     event: str
     ras: Optional[int]
+    message: Optional[str]
 
     def __post_init__(self) -> None:
         """
         Checks all field types.
         """
         for (name, field_type) in self.__annotations__.items():
-            if name == "ras":
+            if name == "ras" or name == "message":
                 field_type = field_type.__args__
             if not isinstance(self.__dict__[name], field_type):
                 raise TypeError(
@@ -157,7 +159,7 @@ class Response:
             k: v
             for k, v in self.__dict__.items()
             if not (k.startswith("__") and k.endswith("__"))
-            and not (k == "ras" and v == None)
+            and not (k == "ras" or k == "message" and v == None)
         }
         return json.dumps(result)
 
@@ -513,24 +515,27 @@ class SignalResponder:
                 signal = Signal(**data)
                 yield signal
 
-    def respond(self, publisher_id: str, event: str, ras: int = None) -> None:
+    def respond(
+        self, publisher_id: str, event: str, ras: int = None, message: str = None
+    ) -> None:
         """
         Publish a legal response to a certain publisher_id's event signal.
         Also allows for optional ras code to be added on (required for 
-        publisher acknowledgement, but not for initialization response).
+        publisher acknowledgement, but not for initialization response),
+        as well as an optional message.
         """
-        response = Response(self.responder_id, publisher_id, event, ras)
+        response = Response(self.responder_id, publisher_id, event, ras, message)
         self.redis.publish("event-signal-response", response.to_json_str())
         self.logger.debug(f"Published response for event {event} from {publisher_id}")
 
-    def srespond(self, signal: Signal, ras: int = None) -> None:
+    def srespond(self, signal: Signal, ras: int = None, message: str = None) -> None:
         """
         Publish a legal response to a given signal. Serves as a wrapper
         for the respond method. Also allows for optional ras code to be
         added on (required for publisher acknowledgement, but not for 
-        initialization response).
+        initialization response), as well as an optional message.
         """
-        self.respond(signal.publisher_id, signal.event, ras)
+        self.respond(signal.publisher_id, signal.event, ras, message)
 
     def lock_id(self, publisher_id: str) -> None:
         """

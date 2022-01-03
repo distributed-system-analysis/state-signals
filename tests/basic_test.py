@@ -17,9 +17,11 @@ def _listener(responder):
     for signal in responder.listen():
         if signal.tag == "bad":
             ras = 0
+            message = "I messed up!"
         else:
             ras = 1
-        responder.srespond(signal, ras)
+            message = "I did it!"
+        responder.srespond(signal, ras, message)
 
 
 sig_ex = state_signals.SignalExporter("fakemark", log_level="DEBUG")
@@ -57,6 +59,7 @@ def test_good_response():
         "benchmark-start", metadata={"something": "cool info"}
     )
     assert int(result) == 0
+    assert "I did it!" in msgs.values()
 
 
 @pytest.mark.dependency(depends=["test_good_response"])
@@ -65,6 +68,7 @@ def test_bad_response():
         "benchmark-stop", metadata={"tool": "give bad resp"}, tag="bad"
     )
     assert int(result) == 1
+    assert "I messed up!" in msgs.values()
 
 
 @pytest.mark.dependency("test_bad_response")
