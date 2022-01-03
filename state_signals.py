@@ -159,7 +159,7 @@ class Response:
             k: v
             for k, v in self.__dict__.items()
             if not (k.startswith("__") and k.endswith("__"))
-            and not (k == "ras" or k == "message" and v == None)
+            and not ((k == "ras" or k == "message") and v == None)
         }
         return json.dumps(result)
 
@@ -367,7 +367,7 @@ class SignalExporter:
                     f"Timeout after waiting {timeout} seconds for sub response"
                 )
                 sub_check.stop()
-                return ResultCodes.MISSING_RESPONSE
+                return (ResultCodes.MISSING_RESPONSE, msgs)
 
         return (result_code_holder[0], msgs)
 

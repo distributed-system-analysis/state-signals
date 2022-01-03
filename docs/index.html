@@ -65,7 +65,7 @@ and responding incredibly easy to integrate into any code.
 &#34;&#34;&#34;
 
 
-from dataclasses import dataclass
+from dataclasses import MISSING, dataclass
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 import redis
@@ -177,20 +177,22 @@ class Response:
         - ras: Response Action Success code  
             - Whether or not the responding process successfully processed/acted upon the signal  
             - 1 = successful, 0 (or other) = unsuccessful  
-            - Not needed when not subscribed or responding to initialization  
+            - Not needed when not subscribed or responding to initialization
+        - message: Optional string message for further detail 
     &#34;&#34;&#34;
 
     responder_id: str
     publisher_id: str
     event: str
     ras: Optional[int]
+    message: Optional[str]
 
     def __post_init__(self) -&gt; None:
         &#34;&#34;&#34;
         Checks all field types.
         &#34;&#34;&#34;
         for (name, field_type) in self.__annotations__.items():
-            if name == &#34;ras&#34;:
+            if name == &#34;ras&#34; or name == &#34;message&#34;:
                 field_type = field_type.__args__
             if not isinstance(self.__dict__[name], field_type):
                 raise TypeError(
@@ -205,7 +207,7 @@ class Response:
             k: v
             for k, v in self.__dict__.items()
             if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
-            and not (k == &#34;ras&#34; and v == None)
+            and not ((k == &#34;ras&#34; or k == &#34;message&#34;) and v == None)
         }
         return json.dumps(result)
 
@@ -303,10 +305,11 @@ class SignalExporter:
         subscriber.subscribe(**{&#34;event-signal-response&#34;: _init_handler})
         self.init_listener = subscriber.run_in_thread()
 
-    def _check_subs(self, event: str) -&gt; Tuple[Any, List[int]]:
+    def _check_subs(self, event: str) -&gt; Tuple[Any, List[int], Dict[str, str]]:
         &#34;&#34;&#34;
         Listen for responses from all registered subscribers. Return
-        listener, as well as value based on responders&#39; RAS codes.
+        listener, as well as value based on responders&#39; RAS codes and
+        any messages included by responders.
         &#34;&#34;&#34;
         if not self.subs:
             return None, [0]
@@ -314,6 +317,7 @@ class SignalExporter:
         to_check = set(self.subs)
         subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         result_code_holder = [ResultCodes.ALL_SUBS_SUCCESS]
+        msgs = {}
 
         def _sub_handler(item: Dict) -&gt; None:
             data = self._get_data_dict(item)
@@ -330,12 +334,14 @@ class SignalExporter:
                                 f&#34;Tool &#39;{data[&#39;responder_id&#39;]}&#39; returned bad response for event &#39;{event}&#39;, ras: {data[&#39;ras&#39;]}&#34;
                             )
                             result_code_holder[0] = ResultCodes.SUB_FAILED
+                    if &#34;message&#34; in data:
+                        msgs[data[&#34;responder_id&#34;]] = data[&#34;message&#34;]
             if not to_check:
                 listener.stop()
 
         subscriber.subscribe(**{&#34;event-signal-response&#34;: _sub_handler})
         listener = subscriber.run_in_thread()
-        return listener, result_code_holder
+        return listener, result_code_holder, msgs
 
     def _valid_str_list(self, names: List[str]) -&gt; bool:
         &#34;&#34;&#34;
@@ -355,13 +361,13 @@ class SignalExporter:
         tag: str = None,
         metadata: Dict = None,
         timeout: int = 20,
-    ) -&gt; int:
+    ) -&gt; Tuple[int, Dict[str, str]]:
         &#34;&#34;&#34;
         Publish a legal event signal. Includes additional options to specify sample_no,
         a tag, and any other additional metadata. Will then wait for responses from
         subscribed responders (if any). The method will give up once the timeout period
         is reached (default = 20s). Returns one of the below result codes based on
-        signal publish/response success.
+        signal publish/response success, as well as any included response messages.
 
         Result Codes:
 
@@ -395,7 +401,7 @@ class SignalExporter:
             )
 
         sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
-        sub_check, result_code_holder = self._check_subs(event)
+        sub_check, result_code_holder, msgs = self._check_subs(event)
 
         self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
         self.logger.debug(f&#34;Signal published for event {event}&#34;)
@@ -409,9 +415,9 @@ class SignalExporter:
                     f&#34;Timeout after waiting {timeout} seconds for sub response&#34;
                 )
                 sub_check.stop()
-                return ResultCodes.MISSING_RESPONSE
+                return (ResultCodes.MISSING_RESPONSE, msgs)
 
-        return result_code_holder[0]
+        return (result_code_holder[0], msgs)
 
     def initialize(
         self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None
@@ -557,24 +563,27 @@ class SignalResponder:
                 signal = Signal(**data)
                 yield signal
 
-    def respond(self, publisher_id: str, event: str, ras: int = None) -&gt; None:
+    def respond(
+        self, publisher_id: str, event: str, ras: int = None, message: str = None
+    ) -&gt; None:
         &#34;&#34;&#34;
         Publish a legal response to a certain publisher_id&#39;s event signal.
         Also allows for optional ras code to be added on (required for 
-        publisher acknowledgement, but not for initialization response).
+        publisher acknowledgement, but not for initialization response),
+        as well as an optional message.
         &#34;&#34;&#34;
-        response = Response(self.responder_id, publisher_id, event, ras)
+        response = Response(self.responder_id, publisher_id, event, ras, message)
         self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
         self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)
 
-    def srespond(self, signal: Signal, ras: int = None) -&gt; None:
+    def srespond(self, signal: Signal, ras: int = None, message: str = None) -&gt; None:
         &#34;&#34;&#34;
         Publish a legal response to a given signal. Serves as a wrapper
         for the respond method. Also allows for optional ras code to be
         added on (required for publisher acknowledgement, but not for 
-        initialization response).
+        initialization response), as well as an optional message.
         &#34;&#34;&#34;
-        self.respond(signal.publisher_id, signal.event, ras)
+        self.respond(signal.publisher_id, signal.event, ras, message)
 
     def lock_id(self, publisher_id: str) -&gt; None:
         &#34;&#34;&#34;
@@ -620,7 +629,7 @@ class SignalResponder:
 <dl>
 <dt id="state_signals.Response"><code class="flex name class">
 <span>class <span class="ident">Response</span></span>
-<span>(</span><span>responder_id: str, publisher_id: str, event: str, ras: Optional[int])</span>
+<span>(</span><span>responder_id: str, publisher_id: str, event: str, ras: Optional[int], message: Optional[str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Standard signal response protocol payload. All required fields, defaults,
@@ -643,6 +652,7 @@ method for converting object data to json string.</p>
 <li>Not needed when not subscribed or responding to initialization</li>
 </ul>
 </li>
+<li>message: Optional string message for further detail</li>
 </ul></div>
 <details class="source">
 <summary>
@@ -662,20 +672,22 @@ method for converting object data to json string.</p>
         - ras: Response Action Success code  
             - Whether or not the responding process successfully processed/acted upon the signal  
             - 1 = successful, 0 (or other) = unsuccessful  
-            - Not needed when not subscribed or responding to initialization  
+            - Not needed when not subscribed or responding to initialization
+        - message: Optional string message for further detail 
     &#34;&#34;&#34;
 
     responder_id: str
     publisher_id: str
     event: str
     ras: Optional[int]
+    message: Optional[str]
 
     def __post_init__(self) -&gt; None:
         &#34;&#34;&#34;
         Checks all field types.
         &#34;&#34;&#34;
         for (name, field_type) in self.__annotations__.items():
-            if name == &#34;ras&#34;:
+            if name == &#34;ras&#34; or name == &#34;message&#34;:
                 field_type = field_type.__args__
             if not isinstance(self.__dict__[name], field_type):
                 raise TypeError(
@@ -690,13 +702,17 @@ method for converting object data to json string.</p>
             k: v
             for k, v in self.__dict__.items()
             if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
-            and not (k == &#34;ras&#34; and v == None)
+            and not ((k == &#34;ras&#34; or k == &#34;message&#34;) and v == None)
         }
         return json.dumps(result)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
 <dt id="state_signals.Response.event"><code class="name">var <span class="ident">event</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="state_signals.Response.message"><code class="name">var <span class="ident">message</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -732,7 +748,7 @@ method for converting object data to json string.</p>
         k: v
         for k, v in self.__dict__.items()
         if not (k.startswith(&#34;__&#34;) and k.endswith(&#34;__&#34;))
-        and not (k == &#34;ras&#34; and v == None)
+        and not ((k == &#34;ras&#34; or k == &#34;message&#34;) and v == None)
     }
     return json.dumps(result)</code></pre>
 </details>
@@ -1026,10 +1042,11 @@ platform.node() value)</p></div>
         subscriber.subscribe(**{&#34;event-signal-response&#34;: _init_handler})
         self.init_listener = subscriber.run_in_thread()
 
-    def _check_subs(self, event: str) -&gt; Tuple[Any, List[int]]:
+    def _check_subs(self, event: str) -&gt; Tuple[Any, List[int], Dict[str, str]]:
         &#34;&#34;&#34;
         Listen for responses from all registered subscribers. Return
-        listener, as well as value based on responders&#39; RAS codes.
+        listener, as well as value based on responders&#39; RAS codes and
+        any messages included by responders.
         &#34;&#34;&#34;
         if not self.subs:
             return None, [0]
@@ -1037,6 +1054,7 @@ platform.node() value)</p></div>
         to_check = set(self.subs)
         subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         result_code_holder = [ResultCodes.ALL_SUBS_SUCCESS]
+        msgs = {}
 
         def _sub_handler(item: Dict) -&gt; None:
             data = self._get_data_dict(item)
@@ -1053,12 +1071,14 @@ platform.node() value)</p></div>
                                 f&#34;Tool &#39;{data[&#39;responder_id&#39;]}&#39; returned bad response for event &#39;{event}&#39;, ras: {data[&#39;ras&#39;]}&#34;
                             )
                             result_code_holder[0] = ResultCodes.SUB_FAILED
+                    if &#34;message&#34; in data:
+                        msgs[data[&#34;responder_id&#34;]] = data[&#34;message&#34;]
             if not to_check:
                 listener.stop()
 
         subscriber.subscribe(**{&#34;event-signal-response&#34;: _sub_handler})
         listener = subscriber.run_in_thread()
-        return listener, result_code_holder
+        return listener, result_code_holder, msgs
 
     def _valid_str_list(self, names: List[str]) -&gt; bool:
         &#34;&#34;&#34;
@@ -1078,13 +1098,13 @@ platform.node() value)</p></div>
         tag: str = None,
         metadata: Dict = None,
         timeout: int = 20,
-    ) -&gt; int:
+    ) -&gt; Tuple[int, Dict[str, str]]:
         &#34;&#34;&#34;
         Publish a legal event signal. Includes additional options to specify sample_no,
         a tag, and any other additional metadata. Will then wait for responses from
         subscribed responders (if any). The method will give up once the timeout period
         is reached (default = 20s). Returns one of the below result codes based on
-        signal publish/response success.
+        signal publish/response success, as well as any included response messages.
 
         Result Codes:
 
@@ -1118,7 +1138,7 @@ platform.node() value)</p></div>
             )
 
         sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
-        sub_check, result_code_holder = self._check_subs(event)
+        sub_check, result_code_holder, msgs = self._check_subs(event)
 
         self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
         self.logger.debug(f&#34;Signal published for event {event}&#34;)
@@ -1132,9 +1152,9 @@ platform.node() value)</p></div>
                     f&#34;Timeout after waiting {timeout} seconds for sub response&#34;
                 )
                 sub_check.stop()
-                return ResultCodes.MISSING_RESPONSE
+                return (ResultCodes.MISSING_RESPONSE, msgs)
 
-        return result_code_holder[0]
+        return (result_code_holder[0], msgs)
 
     def initialize(
         self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None
@@ -1281,14 +1301,14 @@ sub(s) received, 1 if timed-out (or hangs if no timeout).</p></div>
 </details>
 </dd>
 <dt id="state_signals.SignalExporter.publish_signal"><code class="name flex">
-<span>def <span class="ident">publish_signal</span></span>(<span>self, event: str, sample: int = -1, tag: str = None, metadata: Dict = None, timeout: int = 20) ‑> int</span>
+<span>def <span class="ident">publish_signal</span></span>(<span>self, event: str, sample: int = -1, tag: str = None, metadata: Dict = None, timeout: int = 20) ‑> Tuple[int, Dict[str, str]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Publish a legal event signal. Includes additional options to specify sample_no,
 a tag, and any other additional metadata. Will then wait for responses from
 subscribed responders (if any). The method will give up once the timeout period
 is reached (default = 20s). Returns one of the below result codes based on
-signal publish/response success.</p>
+signal publish/response success, as well as any included response messages.</p>
 <p>Result Codes:</p>
 <ul>
 <li>ALL_SUBS_SUCCESS = 0 = all subs responded well </li>
@@ -1307,13 +1327,13 @@ signal publish/response success.</p>
     tag: str = None,
     metadata: Dict = None,
     timeout: int = 20,
-) -&gt; int:
+) -&gt; Tuple[int, Dict[str, str]]:
     &#34;&#34;&#34;
     Publish a legal event signal. Includes additional options to specify sample_no,
     a tag, and any other additional metadata. Will then wait for responses from
     subscribed responders (if any). The method will give up once the timeout period
     is reached (default = 20s). Returns one of the below result codes based on
-    signal publish/response success.
+    signal publish/response success, as well as any included response messages.
 
     Result Codes:
 
@@ -1347,7 +1367,7 @@ signal publish/response success.</p>
         )
 
     sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
-    sub_check, result_code_holder = self._check_subs(event)
+    sub_check, result_code_holder, msgs = self._check_subs(event)
 
     self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
     self.logger.debug(f&#34;Signal published for event {event}&#34;)
@@ -1361,9 +1381,9 @@ signal publish/response success.</p>
                 f&#34;Timeout after waiting {timeout} seconds for sub response&#34;
             )
             sub_check.stop()
-            return ResultCodes.MISSING_RESPONSE
+            return (ResultCodes.MISSING_RESPONSE, msgs)
 
-    return result_code_holder[0]</code></pre>
+    return (result_code_holder[0], msgs)</code></pre>
 </details>
 </dd>
 <dt id="state_signals.SignalExporter.shutdown"><code class="name flex">
@@ -1484,24 +1504,27 @@ Allows for specification of redis host/port.</p></div>
                 signal = Signal(**data)
                 yield signal
 
-    def respond(self, publisher_id: str, event: str, ras: int = None) -&gt; None:
+    def respond(
+        self, publisher_id: str, event: str, ras: int = None, message: str = None
+    ) -&gt; None:
         &#34;&#34;&#34;
         Publish a legal response to a certain publisher_id&#39;s event signal.
         Also allows for optional ras code to be added on (required for 
-        publisher acknowledgement, but not for initialization response).
+        publisher acknowledgement, but not for initialization response),
+        as well as an optional message.
         &#34;&#34;&#34;
-        response = Response(self.responder_id, publisher_id, event, ras)
+        response = Response(self.responder_id, publisher_id, event, ras, message)
         self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
         self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)
 
-    def srespond(self, signal: Signal, ras: int = None) -&gt; None:
+    def srespond(self, signal: Signal, ras: int = None, message: str = None) -&gt; None:
         &#34;&#34;&#34;
         Publish a legal response to a given signal. Serves as a wrapper
         for the respond method. Also allows for optional ras code to be
         added on (required for publisher acknowledgement, but not for 
-        initialization response).
+        initialization response), as well as an optional message.
         &#34;&#34;&#34;
-        self.respond(signal.publisher_id, signal.event, ras)
+        self.respond(signal.publisher_id, signal.event, ras, message)
 
     def lock_id(self, publisher_id: str) -&gt; None:
         &#34;&#34;&#34;
@@ -1602,47 +1625,51 @@ chosen id.</p></div>
 </details>
 </dd>
 <dt id="state_signals.SignalResponder.respond"><code class="name flex">
-<span>def <span class="ident">respond</span></span>(<span>self, publisher_id: str, event: str, ras: int = None) ‑> None</span>
+<span>def <span class="ident">respond</span></span>(<span>self, publisher_id: str, event: str, ras: int = None, message: str = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Publish a legal response to a certain publisher_id's event signal.
 Also allows for optional ras code to be added on (required for
-publisher acknowledgement, but not for initialization response).</p></div>
+publisher acknowledgement, but not for initialization response),
+as well as an optional message.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def respond(self, publisher_id: str, event: str, ras: int = None) -&gt; None:
+<pre><code class="python">def respond(
+    self, publisher_id: str, event: str, ras: int = None, message: str = None
+) -&gt; None:
     &#34;&#34;&#34;
     Publish a legal response to a certain publisher_id&#39;s event signal.
     Also allows for optional ras code to be added on (required for 
-    publisher acknowledgement, but not for initialization response).
+    publisher acknowledgement, but not for initialization response),
+    as well as an optional message.
     &#34;&#34;&#34;
-    response = Response(self.responder_id, publisher_id, event, ras)
+    response = Response(self.responder_id, publisher_id, event, ras, message)
     self.redis.publish(&#34;event-signal-response&#34;, response.to_json_str())
     self.logger.debug(f&#34;Published response for event {event} from {publisher_id}&#34;)</code></pre>
 </details>
 </dd>
 <dt id="state_signals.SignalResponder.srespond"><code class="name flex">
-<span>def <span class="ident">srespond</span></span>(<span>self, signal: <a title="state_signals.Signal" href="#state_signals.Signal">Signal</a>, ras: int = None) ‑> None</span>
+<span>def <span class="ident">srespond</span></span>(<span>self, signal: <a title="state_signals.Signal" href="#state_signals.Signal">Signal</a>, ras: int = None, message: str = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Publish a legal response to a given signal. Serves as a wrapper
 for the respond method. Also allows for optional ras code to be
 added on (required for publisher acknowledgement, but not for
-initialization response).</p></div>
+initialization response), as well as an optional message.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def srespond(self, signal: Signal, ras: int = None) -&gt; None:
+<pre><code class="python">def srespond(self, signal: Signal, ras: int = None, message: str = None) -&gt; None:
     &#34;&#34;&#34;
     Publish a legal response to a given signal. Serves as a wrapper
     for the respond method. Also allows for optional ras code to be
     added on (required for publisher acknowledgement, but not for 
-    initialization response).
+    initialization response), as well as an optional message.
     &#34;&#34;&#34;
-    self.respond(signal.publisher_id, signal.event, ras)</code></pre>
+    self.respond(signal.publisher_id, signal.event, ras, message)</code></pre>
 </details>
 </dd>
 <dt id="state_signals.SignalResponder.unlock"><code class="name flex">
@@ -1682,8 +1709,9 @@ from all publisher_ids and tags.</p></div>
 <ul>
 <li>
 <h4><code><a title="state_signals.Response" href="#state_signals.Response">Response</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="state_signals.Response.event" href="#state_signals.Response.event">event</a></code></li>
+<li><code><a title="state_signals.Response.message" href="#state_signals.Response.message">message</a></code></li>
 <li><code><a title="state_signals.Response.publisher_id" href="#state_signals.Response.publisher_id">publisher_id</a></code></li>
 <li><code><a title="state_signals.Response.ras" href="#state_signals.Response.ras">ras</a></code></li>
 <li><code><a title="state_signals.Response.responder_id" href="#state_signals.Response.responder_id">responder_id</a></code></li>

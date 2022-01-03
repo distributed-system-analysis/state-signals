@@ -27,13 +27,15 @@ print("Proof of response (subs): " + str(sig_ex.subs))
 time.sleep(1)
 
 print("\nBENCHMARK START TEST\n")
-result = sig_ex.publish_signal("benchmark-start", metadata={"something": "cool info"})
+result, _ = sig_ex.publish_signal(
+    "benchmark-start", metadata={"something": "cool info"}
+)
 time.sleep(1)
 print(f"SUBS CLEARED! Result code: {result}")
 time.sleep(1)
 
 print("\nBENCHMARK STOP TEST\n")
-result = sig_ex.publish_signal(
+result, _ = sig_ex.publish_signal(
     "benchmark-stop", metadata={"tool": "give bad resp"}, tag="bad"
 )
 time.sleep(1)
