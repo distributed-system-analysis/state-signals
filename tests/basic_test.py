@@ -10,7 +10,6 @@ print(sys.path)
 
 import pytest
 import state_signals
-import time
 from multiprocessing import Process
 
 
@@ -54,7 +53,7 @@ def test_init():
 
 @pytest.mark.dependency(depends=["test_init"])
 def test_good_response():
-    result = sig_ex.publish_signal(
+    result, msgs = sig_ex.publish_signal(
         "benchmark-start", metadata={"something": "cool info"}
     )
     assert int(result) == 0
@@ -62,7 +61,7 @@ def test_good_response():
 
 @pytest.mark.dependency(depends=["test_good_response"])
 def test_bad_response():
-    result = sig_ex.publish_signal(
+    result, msgs = sig_ex.publish_signal(
         "benchmark-stop", metadata={"tool": "give bad resp"}, tag="bad"
     )
     assert int(result) == 1

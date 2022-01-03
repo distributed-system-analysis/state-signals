@@ -17,7 +17,7 @@ and responding incredibly easy to integrate into any code.
 """
 
 
-from dataclasses import dataclass
+from dataclasses import MISSING, dataclass
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 import redis
@@ -255,10 +255,11 @@ class SignalExporter:
         subscriber.subscribe(**{"event-signal-response": _init_handler})
         self.init_listener = subscriber.run_in_thread()
 
-    def _check_subs(self, event: str) -> Tuple[Any, List[int]]:
+    def _check_subs(self, event: str) -> Tuple[Any, List[int], Dict[str, str]]:
         """
         Listen for responses from all registered subscribers. Return
-        listener, as well as value based on responders' RAS codes.
+        listener, as well as value based on responders' RAS codes and
+        any messages included by responders.
         """
         if not self.subs:
             return None, [0]
@@ -266,6 +267,7 @@ class SignalExporter:
         to_check = set(self.subs)
         subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         result_code_holder = [ResultCodes.ALL_SUBS_SUCCESS]
+        msgs = {}
 
         def _sub_handler(item: Dict) -> None:
             data = self._get_data_dict(item)
@@ -282,12 +284,14 @@ class SignalExporter:
                                 f"Tool '{data['responder_id']}' returned bad response for event '{event}', ras: {data['ras']}"
                             )
                             result_code_holder[0] = ResultCodes.SUB_FAILED
+                    if "message" in data:
+                        msgs[data["responder_id"]] = data["message"]
             if not to_check:
                 listener.stop()
 
         subscriber.subscribe(**{"event-signal-response": _sub_handler})
         listener = subscriber.run_in_thread()
-        return listener, result_code_holder
+        return listener, result_code_holder, msgs
 
     def _valid_str_list(self, names: List[str]) -> bool:
         """
@@ -307,13 +311,13 @@ class SignalExporter:
         tag: str = None,
         metadata: Dict = None,
         timeout: int = 20,
-    ) -> int:
+    ) -> Tuple[int, Dict[str, str]]:
         """
         Publish a legal event signal. Includes additional options to specify sample_no,
         a tag, and any other additional metadata. Will then wait for responses from
         subscribed responders (if any). The method will give up once the timeout period
         is reached (default = 20s). Returns one of the below result codes based on
-        signal publish/response success.
+        signal publish/response success, as well as any included response messages.
 
         Result Codes:
 
@@ -347,7 +351,7 @@ class SignalExporter:
             )
 
         sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
-        sub_check, result_code_holder = self._check_subs(event)
+        sub_check, result_code_holder, msgs = self._check_subs(event)
 
         self.redis.publish(channel="event-signal-pubsub", message=sig.to_json_str())
         self.logger.debug(f"Signal published for event {event}")
@@ -363,7 +367,7 @@ class SignalExporter:
                 sub_check.stop()
                 return ResultCodes.MISSING_RESPONSE
 
-        return result_code_holder[0]
+        return (result_code_holder[0], msgs)
 
     def initialize(
         self, legal_events: List[str], tag: str = None, expected_resps: List[str] = None
