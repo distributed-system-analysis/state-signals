@@ -10,10 +10,16 @@ print(sys.path)
 
 import pytest
 import state_signals
+import time
 from multiprocessing import Process
 
 
-def _listener(responder):
+def _listener():
+    time.sleep(5)
+    responder = state_signals.SignalResponder(
+        responder_name="fakeresp", log_level="DEBUG"
+    )
+    responder.lock_id(sig_ex.pub_id)
     for signal in responder.listen():
         if signal.tag == "bad":
             ras = 0
@@ -25,15 +31,13 @@ def _listener(responder):
 
 
 sig_ex = state_signals.SignalExporter("fakemark", log_level="DEBUG")
-responder = state_signals.SignalResponder(responder_name="fakeresp", log_level="DEBUG")
-responder.lock_id(sig_ex.pub_id)
-resp_proc = Process(target=_listener, args=(responder,), daemon=True)
+resp_proc = Process(target=_listener, daemon=True)
 
 
 def _init():
     resp_proc.start()
     return sig_ex.initialize_and_wait(
-        1, legal_events=["benchmark-start", "benchmark-stop"]
+        1, legal_events=["benchmark-start", "benchmark-stop"], periodic=True
     )
 
 
