@@ -226,13 +226,15 @@ class SignalExporter:
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         runner_host: str = platform.node(),
+        conn_timeout: int = 20,
         log_level: str = &#34;INFO&#34;,
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets exporter object fields and generates unique publisher_id.
-        Allows for specification of redis host/port. Also allows runner
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds. Also allows runner
         hostname to be inputted manually (otherwise will default to 
-        platform.node() value)
+        platform.node() value). 
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalExporter&#34;, process_name, log_level)
         self.subs = []
@@ -240,6 +242,18 @@ class SignalExporter:
         self.runner_host = runner_host
         self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        success = False
+        while conn_timeout &gt; 0:
+            try:
+                self.redis.ping()
+                success = True
+                break
+            except redis.ConnectionError:
+                time.sleep(1)
+                conn_timeout -= 1
+                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        if not success:
+            raise redis.ConnectionError
         self.init_listener = None
         self.legal_events = None
 
@@ -312,7 +326,7 @@ class SignalExporter:
         any messages included by responders.
         &#34;&#34;&#34;
         if not self.subs:
-            return None, [0]
+            return None, [0], {}
 
         to_check = set(self.subs)
         subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
@@ -452,15 +466,21 @@ class SignalExporter:
         tag: str = None,
         expected_resps: List[str] = None,
         timeout: int = 60,
+        periodic: bool = False,
     ) -&gt; int:
         &#34;&#34;&#34;
         Calls the SignalExporter&#39;s initialize() method, and awaits a specified
-        number of subscribers. Also includes an optional timeout. Returns 0 if
-        sub(s) received, 1 if timed-out (or hangs if no timeout).
+        number of subscribers. If periodic is set to true, it will continue to
+        republish the initialization signal for late responders. Also includes
+        an optional timeout. Returns 0 if sub(s) received, 1 if timed-out (or
+        hangs if no timeout).
         &#34;&#34;&#34;
         self.initialize(
             legal_events=legal_events, tag=tag, expected_resps=expected_resps
         )
+        if periodic:
+            sig = self._sig_builder(event=&#34;initialization&#34;, tag=tag)
+
         counter = 0
         while len(self.subs) &lt; await_sub_count:
             time.sleep(0.1)
@@ -470,6 +490,11 @@ class SignalExporter:
                     f&#34;Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}&#34;
                 )
                 return 1
+            if periodic and counter % 10 == 0:
+                self.redis.publish(
+                    channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str()
+                )
+                self.logger.info(&#34;Periodic initialization published&#34;)
         return 0
 
     def shutdown(self, tag: str = None) -&gt; None:
@@ -479,6 +504,7 @@ class SignalExporter:
         &#34;&#34;&#34;
         sig = self._sig_builder(event=&#34;shutdown&#34;, tag=tag)
         self.init_listener.stop()
+        self.init_listener.join()
         self.subs = []
         self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
         self.logger.debug(&#34;Shutdown successful!&#34;)
@@ -497,14 +523,28 @@ class SignalResponder:
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         responder_name: str = platform.node(),
-        log_level=&#34;INFO&#34;,
+        conn_timeout: int = 20,
+        log_level: str = &#34;INFO&#34;,
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets responder object fields and generates unique responder_id.
-        Allows for specification of redis host/port.
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds.
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalResponder&#34;, responder_name, log_level)
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        success = False
+        while conn_timeout &gt; 0:
+            try:
+                self.redis.ping()
+                success = True
+                break
+            except redis.ConnectionError:
+                time.sleep(1)
+                conn_timeout -= 1
+                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        if not success:
+            raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
         self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
@@ -934,7 +974,7 @@ method for converting object data to json string.</p>
 </dd>
 <dt id="state_signals.SignalExporter"><code class="flex name class">
 <span>class <span class="ident">SignalExporter</span></span>
-<span>(</span><span>process_name: str, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = platform.node(), log_level: str = 'INFO')</span>
+<span>(</span><span>process_name: str, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = platform.node(), conn_timeout: int = 20, log_level: str = 'INFO')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A signal management object for tools that wish to publish event/state signals.
@@ -942,9 +982,10 @@ Also handles subscriber recording and response reading/awaiting. Uses the standa
 signal protocol for all published messages. Easy-to-use interface for publishing
 legal signals and handling responders.</p>
 <p>init: Sets exporter object fields and generates unique publisher_id.
-Allows for specification of redis host/port. Also allows runner
+Allows for specification of redis host/port. Will continue to attempt
+to connect to redis server for conn_timeout seconds. Also allows runner
 hostname to be inputted manually (otherwise will default to
-platform.node() value)</p></div>
+platform.node() value).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -963,13 +1004,15 @@ platform.node() value)</p></div>
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         runner_host: str = platform.node(),
+        conn_timeout: int = 20,
         log_level: str = &#34;INFO&#34;,
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets exporter object fields and generates unique publisher_id.
-        Allows for specification of redis host/port. Also allows runner
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds. Also allows runner
         hostname to be inputted manually (otherwise will default to 
-        platform.node() value)
+        platform.node() value). 
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalExporter&#34;, process_name, log_level)
         self.subs = []
@@ -977,6 +1020,18 @@ platform.node() value)</p></div>
         self.runner_host = runner_host
         self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        success = False
+        while conn_timeout &gt; 0:
+            try:
+                self.redis.ping()
+                success = True
+                break
+            except redis.ConnectionError:
+                time.sleep(1)
+                conn_timeout -= 1
+                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        if not success:
+            raise redis.ConnectionError
         self.init_listener = None
         self.legal_events = None
 
@@ -1049,7 +1104,7 @@ platform.node() value)</p></div>
         any messages included by responders.
         &#34;&#34;&#34;
         if not self.subs:
-            return None, [0]
+            return None, [0], {}
 
         to_check = set(self.subs)
         subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
@@ -1189,15 +1244,21 @@ platform.node() value)</p></div>
         tag: str = None,
         expected_resps: List[str] = None,
         timeout: int = 60,
+        periodic: bool = False,
     ) -&gt; int:
         &#34;&#34;&#34;
         Calls the SignalExporter&#39;s initialize() method, and awaits a specified
-        number of subscribers. Also includes an optional timeout. Returns 0 if
-        sub(s) received, 1 if timed-out (or hangs if no timeout).
+        number of subscribers. If periodic is set to true, it will continue to
+        republish the initialization signal for late responders. Also includes
+        an optional timeout. Returns 0 if sub(s) received, 1 if timed-out (or
+        hangs if no timeout).
         &#34;&#34;&#34;
         self.initialize(
             legal_events=legal_events, tag=tag, expected_resps=expected_resps
         )
+        if periodic:
+            sig = self._sig_builder(event=&#34;initialization&#34;, tag=tag)
+
         counter = 0
         while len(self.subs) &lt; await_sub_count:
             time.sleep(0.1)
@@ -1207,6 +1268,11 @@ platform.node() value)</p></div>
                     f&#34;Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}&#34;
                 )
                 return 1
+            if periodic and counter % 10 == 0:
+                self.redis.publish(
+                    channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str()
+                )
+                self.logger.info(&#34;Periodic initialization published&#34;)
         return 0
 
     def shutdown(self, tag: str = None) -&gt; None:
@@ -1216,6 +1282,7 @@ platform.node() value)</p></div>
         &#34;&#34;&#34;
         sig = self._sig_builder(event=&#34;shutdown&#34;, tag=tag)
         self.init_listener.stop()
+        self.init_listener.join()
         self.subs = []
         self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
         self.logger.debug(&#34;Shutdown successful!&#34;)</code></pre>
@@ -1262,12 +1329,14 @@ input of expected responders (subscribers) as well as a tag.</p></div>
 </details>
 </dd>
 <dt id="state_signals.SignalExporter.initialize_and_wait"><code class="name flex">
-<span>def <span class="ident">initialize_and_wait</span></span>(<span>self, await_sub_count: int, legal_events: List[str], tag: str = None, expected_resps: List[str] = None, timeout: int = 60) ‑> int</span>
+<span>def <span class="ident">initialize_and_wait</span></span>(<span>self, await_sub_count: int, legal_events: List[str], tag: str = None, expected_resps: List[str] = None, timeout: int = 60, periodic: bool = False) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Calls the SignalExporter's initialize() method, and awaits a specified
-number of subscribers. Also includes an optional timeout. Returns 0 if
-sub(s) received, 1 if timed-out (or hangs if no timeout).</p></div>
+number of subscribers. If periodic is set to true, it will continue to
+republish the initialization signal for late responders. Also includes
+an optional timeout. Returns 0 if sub(s) received, 1 if timed-out (or
+hangs if no timeout).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1279,15 +1348,21 @@ sub(s) received, 1 if timed-out (or hangs if no timeout).</p></div>
     tag: str = None,
     expected_resps: List[str] = None,
     timeout: int = 60,
+    periodic: bool = False,
 ) -&gt; int:
     &#34;&#34;&#34;
     Calls the SignalExporter&#39;s initialize() method, and awaits a specified
-    number of subscribers. Also includes an optional timeout. Returns 0 if
-    sub(s) received, 1 if timed-out (or hangs if no timeout).
+    number of subscribers. If periodic is set to true, it will continue to
+    republish the initialization signal for late responders. Also includes
+    an optional timeout. Returns 0 if sub(s) received, 1 if timed-out (or
+    hangs if no timeout).
     &#34;&#34;&#34;
     self.initialize(
         legal_events=legal_events, tag=tag, expected_resps=expected_resps
     )
+    if periodic:
+        sig = self._sig_builder(event=&#34;initialization&#34;, tag=tag)
+
     counter = 0
     while len(self.subs) &lt; await_sub_count:
         time.sleep(0.1)
@@ -1297,6 +1372,11 @@ sub(s) received, 1 if timed-out (or hangs if no timeout).</p></div>
                 f&#34;Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}&#34;
             )
             return 1
+        if periodic and counter % 10 == 0:
+            self.redis.publish(
+                channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str()
+            )
+            self.logger.info(&#34;Periodic initialization published&#34;)
     return 0</code></pre>
 </details>
 </dd>
@@ -1403,6 +1483,7 @@ Wipes the subscriber list and publishes a shutdown message.</p></div>
     &#34;&#34;&#34;
     sig = self._sig_builder(event=&#34;shutdown&#34;, tag=tag)
     self.init_listener.stop()
+    self.init_listener.join()
     self.subs = []
     self.redis.publish(channel=&#34;event-signal-pubsub&#34;, message=sig.to_json_str())
     self.logger.debug(&#34;Shutdown successful!&#34;)</code></pre>
@@ -1412,7 +1493,7 @@ Wipes the subscriber list and publishes a shutdown message.</p></div>
 </dd>
 <dt id="state_signals.SignalResponder"><code class="flex name class">
 <span>class <span class="ident">SignalResponder</span></span>
-<span>(</span><span>redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = platform.node(), log_level='INFO')</span>
+<span>(</span><span>redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = platform.node(), conn_timeout: int = 20, log_level: str = 'INFO')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A signal management object for tools that wish to respond to event/state signals.
@@ -1420,7 +1501,8 @@ Can be used both for listening for signals as well as responding to them. Also
 allows for locking onto specific tags/publisher_ids. Uses the standard signal
 response protocol for all published messages.</p>
 <p>init: Sets responder object fields and generates unique responder_id.
-Allows for specification of redis host/port.</p></div>
+Allows for specification of redis host/port. Will continue to attempt
+to connect to redis server for conn_timeout seconds.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1438,14 +1520,28 @@ Allows for specification of redis host/port.</p></div>
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         responder_name: str = platform.node(),
-        log_level=&#34;INFO&#34;,
+        conn_timeout: int = 20,
+        log_level: str = &#34;INFO&#34;,
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets responder object fields and generates unique responder_id.
-        Allows for specification of redis host/port.
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds.
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalResponder&#34;, responder_name, log_level)
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        success = False
+        while conn_timeout &gt; 0:
+            try:
+                self.redis.ping()
+                success = True
+                break
+            except redis.ConnectionError:
+                time.sleep(1)
+                conn_timeout -= 1
+                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        if not success:
+            raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
         self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
