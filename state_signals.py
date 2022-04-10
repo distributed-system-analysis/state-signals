@@ -189,7 +189,7 @@ class SignalExporter:
         platform.node() value). 
         """
         self.logger = _create_logger("SignalExporter", process_name, log_level)
-        self.subs = []
+        self.subs = set()
         self.proc_name = process_name
         self.runner_host = runner_host
         self.pub_id = process_name + "-" + str(uuid.uuid4())
@@ -266,7 +266,7 @@ class SignalExporter:
                 and data["event"] == "initialization"
                 and data["publisher_id"] == self.pub_id
             ):
-                self.subs.append(data["responder_id"])
+                self.subs.add(data["responder_id"])
 
         subscriber.subscribe(**{"event-signal-response": _init_handler})
         self.init_listener = subscriber.run_in_thread()
@@ -280,7 +280,7 @@ class SignalExporter:
         if not self.subs:
             return None, [0], {}
 
-        to_check = set(self.subs)
+        to_check = self.subs.copy()
         subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         result_code_holder = [ResultCodes.ALL_SUBS_SUCCESS]
         msgs = {}
@@ -403,7 +403,7 @@ class SignalExporter:
                     "'expected_hosts' arg must be a list of string hostnames"
                 )
             for resp in expected_resps:
-                self.subs.append(resp)
+                self.subs.add(resp)
 
         self.legal_events = legal_events
         sig = self._sig_builder(event="initialization", tag=tag)
@@ -457,7 +457,7 @@ class SignalExporter:
         sig = self._sig_builder(event="shutdown", tag=tag)
         self.init_listener.stop()
         self.init_listener.join()
-        self.subs = []
+        self.subs = set()
         self.redis.publish(channel="event-signal-pubsub", message=sig.to_json_str())
         self.logger.debug("Shutdown successful!")
 
