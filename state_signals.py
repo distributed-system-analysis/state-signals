@@ -195,7 +195,7 @@ class SignalExporter:
         self.pub_id = process_name + "-" + str(uuid.uuid4())
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         success = False
-        while conn_timeout > 0:
+        while conn_timeout != 0:
             try:
                 self.redis.ping()
                 success = True
@@ -376,7 +376,7 @@ class SignalExporter:
         while sub_check and sub_check.is_alive():
             time.sleep(0.1)
             counter += 1
-            if counter >= timeout * 10:
+            if timeout != -1 and counter >= timeout * 10:
                 self.logger.error(
                     f"Timeout after waiting {timeout} seconds for sub response"
                 )
@@ -437,7 +437,7 @@ class SignalExporter:
         while len(self.subs) < await_sub_count:
             time.sleep(0.1)
             counter += 1
-            if counter >= timeout * 10:
+            if timeout != -1 and counter >= timeout * 10:
                 self.logger.error(
                     f"Timeout after waiting {timeout} seconds for {await_sub_count }subs, got {len(self.subs)}"
                 )
@@ -486,7 +486,7 @@ class SignalResponder:
         self.logger = _create_logger("SignalResponder", responder_name, log_level)
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         success = False
-        while conn_timeout > 0:
+        while conn_timeout != 0:
             try:
                 self.redis.ping()
                 success = True
