@@ -67,6 +67,15 @@ def test_good_response():
 
 
 @pytest.mark.dependency(depends=["test_good_response"])
+def test_good_response_no_timeout():
+    result, msgs = sig_ex.publish_signal(
+        "benchmark-stop", metadata={"something": "cool info"}, timeout=-1
+    )
+    assert int(result) == 0
+    assert "I did it!" in msgs.values()
+
+
+@pytest.mark.dependency(depends=["test_good_response_no_timeout"])
 def test_bad_response():
     result, msgs = sig_ex.publish_signal(
         "benchmark-stop", metadata={"tool": "give bad resp"}, tag="bad"
