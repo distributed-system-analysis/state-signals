@@ -184,9 +184,9 @@ class SignalExporter:
         """
         init: Sets exporter object fields and generates unique publisher_id.
         Allows for specification of redis host/port. Will continue to attempt
-        to connect to redis server for conn_timeout seconds. Also allows runner
-        hostname to be inputted manually (otherwise will default to
-        platform.node() value).
+        to connect to redis server for conn_timeout seconds (or forever if
+        conn_timeout is set to -1). Also allows runner hostname to be inputted
+        manually (otherwise will default to platform.node() value).
         """
         self.logger = _create_logger("SignalExporter", process_name, log_level)
         self.subs = set()
@@ -332,8 +332,9 @@ class SignalExporter:
         Publish a legal event signal. Includes additional options to specify sample_no,
         a tag, and any other additional metadata. Will then wait for responses from
         subscribed responders (if any). The method will give up once the timeout period
-        is reached (default = 20s). Returns one of the below result codes based on
-        signal publish/response success, as well as any included response messages.
+        is reached (default = 20s). Timeout can be disabled by setting timeout to -1.
+        Returns one of the below result codes based on signal publish/response success,
+        as well as any included response messages.
 
         Result Codes:
 
@@ -425,7 +426,7 @@ class SignalExporter:
         number of subscribers. If periodic is set to true, it will continue to
         republish the initialization signal for late responders. Also includes
         an optional timeout. Returns 0 if sub(s) received, 1 if timed-out (or
-        hangs if no timeout).
+        hangs if no timeout). Setting timeout to -1 will disable timeout.
         """
         self.initialize(
             legal_events=legal_events, tag=tag, expected_resps=expected_resps
@@ -481,7 +482,8 @@ class SignalResponder:
         """
         init: Sets responder object fields and generates unique responder_id.
         Allows for specification of redis host/port. Will continue to attempt
-        to connect to redis server for conn_timeout seconds.
+        to connect to redis server for conn_timeout seconds (or forever if
+        conn_timeout is set to -1).
         """
         self.logger = _create_logger("SignalResponder", responder_name, log_level)
         self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
