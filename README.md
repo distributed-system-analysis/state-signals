@@ -67,7 +67,7 @@ See the [full documentation](https://distributed-system-analysis.github.io/state
 # Development
 
 Formatting
- - For formatting, get black v19.10b0 via `pip install black==19.10b0`
+ - For formatting, get black v22.3.0 via `pip install black==22.3.0`
  - To check any modified python files, run `black --check (file)`
  - To check the entire repo, run `black --check .` from the top-level
  - To auto-format all python code, remove the `--check` option
