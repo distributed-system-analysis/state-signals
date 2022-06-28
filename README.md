@@ -74,7 +74,7 @@ Formatting
 
 Testing
  - Testing is done with pytest
- - Run a `pip install` for both `pytest` and `pytest-dependency`
+ - Run a `pip install` for `pytest`, `pytest-dependency`, and `pytest-mock`
  - To run the tests, run `pytest -v` from the top-level
  - Any new test functions/scripts can be added into the `tests` folder
  - NOTE: You will need to run a local `redis-server` for the tests to pass
