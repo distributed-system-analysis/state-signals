@@ -136,8 +136,8 @@ class Response:
     responder_id: str
     publisher_id: str
     event: str
-    ras: Optional[int]
-    message: Optional[str]
+    ras: Optional[int] = None
+    message: Optional[str] = None
 
     def __post_init__(self) -> None:
         """
@@ -242,6 +242,7 @@ class SignalExporter:
         try:
             data = json.loads(response["data"])
         except ValueError:
+            self.logger.debug(f"Malformed 'data' in this response message: {response}")
             return None
         if (
             "responder_id" not in data
