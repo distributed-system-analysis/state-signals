@@ -402,7 +402,7 @@ class SignalExporter:
         if expected_resps:
             if not self._valid_str_list(expected_resps):
                 raise TypeError(
-                    "'expected_hosts' arg must be a list of string hostnames"
+                    "'expected_resps' arg must be a list of string hostnames"
                 )
             for resp in expected_resps:
                 self.subs.add(resp)

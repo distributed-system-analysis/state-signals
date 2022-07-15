@@ -158,3 +158,57 @@ def test_response_data_checks(mocker):
         }
     )
     assert data == {"event": "bla", "publisher_id": "bla", "responder_id": "bla"}
+
+
+def test_subless_signal(mocker):
+    mocker.patch("redis.Redis.ping", return_value=0)
+    mocker.patch("redis.Redis.publish", return_value=0)
+    signal_exp = state_signals.SignalExporter(
+        "work plz", redis_host="fakehost", redis_port=1111, log_level="DEBUG"
+    )
+    res = signal_exp.publish_signal(event="test")
+    assert res == (0, {})
+
+
+def test_illegal_init(mocker):
+    mocker.patch("redis.Redis.ping", return_value=0)
+    signal_exp = state_signals.SignalExporter(
+        "work plz", redis_host="fakehost", redis_port=1111, log_level="DEBUG"
+    )
+    try:
+        signal_exp.initialize(legal_events=7)
+        assert 1 == 0
+    except TypeError as e:
+        assert e.args[0] == "'legal_events' arg must be a list of string event names"
+    try:
+        signal_exp.initialize(legal_events=["test", "again"], expected_resps=7)
+        assert 1 == 0
+    except TypeError as e:
+        assert e.args[0] == "'expected_resps' arg must be a list of string hostnames"
+
+
+def test_illegal_publish(mocker):
+    mocker.patch("redis.Redis.ping", return_value=0)
+    signal_exp = state_signals.SignalExporter(
+        "work plz", redis_host="fakehost", redis_port=1111, log_level="DEBUG"
+    )
+    try:
+        res = signal_exp.publish_signal(event="test", timeout="bob")
+        assert 1 == 0
+    except TypeError as e:
+        assert e.args[0] == "'timeout' arg must be an int value"
+
+    try:
+        res = signal_exp.publish_signal(event="initialization")
+        assert 1 == 0
+    except ValueError as e:
+        assert (
+            e.args[0]
+            == "Please use the 'initialize()' method for publishing 'initialization' signals"
+        )
+
+    try:
+        res = signal_exp.publish_signal(event="shutdown")
+        assert 1 == 0
+    except ValueError as e:
+        assert e.args[0] == "Please use the 'shutdown()' method for 'shutdown' signals"
