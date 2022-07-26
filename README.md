@@ -1,4 +1,4 @@
-# State/Event Signal Module
+# state-signals: the State/Event Signal Module
 A python package for handling state/event signals
 
 Adds two new, simple-to-use objects:
