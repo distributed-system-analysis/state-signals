@@ -365,7 +365,7 @@ class SignalExporter:
 
         if not skip_check and not event in self.legal_events:
             raise ValueError(
-                f"Event {self.event} not one of legal events: {self.legal_events}"
+                f"Event {event} not one of legal events: {self.legal_events}"
             )
 
         sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
