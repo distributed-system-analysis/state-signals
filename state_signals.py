@@ -194,7 +194,7 @@ class SignalExporter:
         self.subs = set()
         self.proc_name = process_name
         self.runner_host = runner_host
-        self.pub_id = process_name + "-" + str(uuid.uuid4())
+        self.failed_conn_attempts = 0
         if not existing_redis_conn:
             self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         else:
@@ -209,11 +209,12 @@ class SignalExporter:
                 success = True
                 break
             except redis.ConnectionError:
-                self.logger.debug("Attempting to connect to Redis server")
-                time.sleep(1)
+                self.failed_conn_attempts += 1
                 conn_timeout -= 1
+                time.sleep(1)
         if not success:
             raise redis.ConnectionError
+        self.pub_id = process_name + "-" + str(uuid.uuid4())
         self.init_listener = None
         self.legal_events = None
 
@@ -496,6 +497,7 @@ class SignalResponder:
         for conn_timeout seconds (or forever if conn_timeout is set to -1).
         """
         self.logger = _create_logger("SignalResponder", responder_name, log_level)
+        self.failed_conn_attempts = 0
         if not existing_redis_conn:
             self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         else:
@@ -510,9 +512,9 @@ class SignalResponder:
                 success = True
                 break
             except redis.ConnectionError:
-                self.logger.debug("Attempting to connect to Redis server")
-                time.sleep(1)
+                self.failed_conn_attempts += 1
                 conn_timeout -= 1
+                time.sleep(1)
                 self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
             raise redis.ConnectionError
