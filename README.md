@@ -23,6 +23,7 @@ To install, run `pip install state-signals`
 # Requirements
 The use of this module requires the existence of an accessible redis server.
  - Redis can easily be installed with a `yum install redis` (or replace yum with package manager of choice).
+ - A redis container can also be started using the [official image](https://hub.docker.com/_/redis)
 
 A redis server can be started with the `redis-server` command.
  - The default port is 6379 (also default for state-signals), but can be changed with `--port (port)`
@@ -30,6 +31,8 @@ A redis server can be started with the `redis-server` command.
  - Example config available [here](https://download.redis.io/redis-stable/redis.conf)
 
 See https://redis.io/ for more details and usage
+
+Note that state-signals also works with any redis-compatible pub/sub databases (like [KeyDB](https://github.com/Snapchat/KeyDB))
 
 # Protocol / Behaviors
 
