@@ -12,6 +12,7 @@ print(sys.path)
 import pytest
 import state_signals
 import time
+import redis
 from multiprocessing import Process
 
 
@@ -66,6 +67,19 @@ def _shutdown():
 
 def _cleanup():
     resp_proc.terminate()
+
+
+def test_existing_conns():
+    redis_conn = redis.Redis(host="localhost", port="6379", db=0)
+    try:
+        sig_ex_test = state_signals.SignalExporter(
+            "exist_conn", existing_redis_conn=redis_conn
+        )
+        sig_resp_test = state_signals.SignalResponder(existing_redis_conn=redis_conn)
+    except redis.ConnectionError:
+        assert 1 == 0
+    assert sig_ex_test.pub_id
+    assert sig_resp_test.responder_id
 
 
 def test_basic_start_sub_stop():
