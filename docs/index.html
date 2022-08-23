@@ -260,6 +260,7 @@ class SignalExporter:
                 conn_timeout -= 1
                 time.sleep(1)
         if not success:
+            self.logger.critical(f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;)
             raise redis.ConnectionError
         self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
         self.init_listener = None
@@ -563,6 +564,7 @@ class SignalResponder:
                 time.sleep(1)
                 self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
+            self.logger.critical(f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;)
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
@@ -1046,6 +1048,7 @@ to platform.node() value).</p></div>
                 conn_timeout -= 1
                 time.sleep(1)
         if not success:
+            self.logger.critical(f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;)
             raise redis.ConnectionError
         self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
         self.init_listener = None
@@ -1570,6 +1573,7 @@ for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
                 time.sleep(1)
                 self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
+            self.logger.critical(f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;)
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
