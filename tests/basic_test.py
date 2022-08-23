@@ -1,25 +1,17 @@
+from multiprocessing import Process
 from pathlib import Path
-
-parent = Path(__file__).resolve().parents[1]
-print(parent)
-
-import sys
-
-sys.path.append(str(parent))
-print(sys.path)
-
 import pytest
 import state_signals
+import sys
 import time
-from multiprocessing import Process
 
 
-def _listener():
+def _listener(_sig_ex):
     time.sleep(5)
     responder = state_signals.SignalResponder(
         responder_name="fakeresp", log_level="DEBUG"
     )
-    responder.lock_id(sig_ex.pub_id)
+    responder.lock_id(_sig_ex.pub_id)
     for signal in responder.listen():
         if signal.tag == "bad":
             ras = 0
@@ -30,53 +22,70 @@ def _listener():
         responder.srespond(signal, ras, message)
 
 
-sig_ex = state_signals.SignalExporter("fakemark", log_level="DEBUG")
-resp_proc = Process(target=_listener, daemon=True)
+class MockSubscriber:
+    def __init__(self):
+        self.channel = None
+
+    def subscribe(self, channel):
+        self.channel = channel
 
 
-def _init():
-    resp_proc.start()
-    return sig_ex.initialize_and_wait(
-        1, legal_events=["benchmark-start", "benchmark-stop"], periodic=True
-    )
+class MockRedis:
+    def __init__(self, host, port, db=0):
+        self.host = host
+        self.port = port
+        self.db = db
+        self.channels = dict()
+        self.subscribers = []
+
+    def ping(self):
+        pass
+
+    def pubsub(ignore_subscribe_messages=True):
+        sub = MockSubscriber()
+        self.subscribers.append(sub)
+        return sub
+
+    def publish(channel, message):
+        self.channels[channel].append(message)
 
 
-def _shutdown():
-    sig_ex.shutdown()
+class TestBasic:
+    @pytest.fixture
+    def listener_f(self):
+        self.sig_ex = state_signals.SignalExporter("fakemark", log_level="DEBUG")
+        self.resp_proc = Process(target=_listener, args=(self.sig_ex,), daemon=True)
+        self.resp_proc.start()
+        yield
+        self.sig_ex.shutdown()
+        assert not self.sig_ex.init_listener.is_alive()
+        self.resp_proc.terminate()
+        self.resp_proc = None
+        self.sig_ex = None
 
+    @pytest.fixture(autouse=True)
+    def init_f(self, listener_f):
+        sub_check = self.sig_ex.initialize_and_wait(
+            1, legal_events=["benchmark-start", "benchmark-stop"], periodic=True
+        )
+        return sub_check
 
-def _cleanup():
-    resp_proc.terminate()
+    def test_init(self, init_f):
+        sub_check = init_f
+        assert self.sig_ex.init_listener.is_alive()
+        assert sub_check == 0
+        assert sig_ex.subs
 
+    def test_good_response(self):
+        result, msgs = self.sig_ex.publish_signal(
+            "benchmark-start", metadata={"something": "cool info"}
+        )
+        assert int(result) == 0
+        assert "I did it!" in msgs.values()
 
-@pytest.mark.dependency()
-def test_init():
-    sub_check = _init()
-    assert sig_ex.init_listener.is_alive()
-    assert sub_check == 0
-    assert sig_ex.subs
-
-
-@pytest.mark.dependency(depends=["test_init"])
-def test_good_response():
-    result, msgs = sig_ex.publish_signal(
-        "benchmark-start", metadata={"something": "cool info"}
-    )
-    assert int(result) == 0
-    assert "I did it!" in msgs.values()
-
-
-@pytest.mark.dependency(depends=["test_good_response"])
-def test_bad_response():
-    result, msgs = sig_ex.publish_signal(
-        "benchmark-stop", metadata={"tool": "give bad resp"}, tag="bad"
-    )
-    assert int(result) == 1
-    assert "I messed up!" in msgs.values()
-
-
-@pytest.mark.dependency("test_bad_response")
-def test_shutdown():
-    _shutdown()
-    assert not sig_ex.init_listener.is_alive()
-    _cleanup()
+    def test_bad_response(self):
+        result, msgs = self.sig_ex.publish_signal(
+            "benchmark-stop", metadata={"tool": "give bad resp"}, tag="bad"
+        )
+        assert int(result) == 1
+        assert "I messed up!" in msgs.values()
