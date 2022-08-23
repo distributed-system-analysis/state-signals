@@ -197,11 +197,10 @@ class SignalExporter:
         self.failed_conn_attempts = 0
         if not existing_redis_conn:
             self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+            self.conn_type = "new"
         else:
-            self.logger.debug(
-                "Existing Redis connection provided, ignoring host/port specifications"
-            )
             self.redis = existing_redis_conn
+            self.conn_type = "existing"
         success = False
         while conn_timeout != 0:
             try:
@@ -500,11 +499,10 @@ class SignalResponder:
         self.failed_conn_attempts = 0
         if not existing_redis_conn:
             self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+            self.conn_type = "new"
         else:
-            self.logger.debug(
-                "Existing Redis connection provided, ignoring host/port specifications"
-            )
             self.redis = existing_redis_conn
+            self.conn_type = "existing"
         success = False
         while conn_timeout != 0:
             try:
