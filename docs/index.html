@@ -184,8 +184,8 @@ class Response:
     responder_id: str
     publisher_id: str
     event: str
-    ras: Optional[int] = None
-    message: Optional[str] = None
+    ras: Optional[int]
+    message: Optional[str]
 
     def __post_init__(self) -&gt; None:
         &#34;&#34;&#34;
@@ -223,7 +223,6 @@ class SignalExporter:
     def __init__(
         self,
         process_name: str,
-        existing_redis_conn: redis.Redis = None,
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         runner_host: str = platform.node(),
@@ -232,23 +231,17 @@ class SignalExporter:
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets exporter object fields and generates unique publisher_id.
-        Allows for use of an existing Redis connection object or specification
-        of redis host/port. Will continue to attempt to connect to redis server
-        for conn_timeout seconds (or forever if conn_timeout is set to -1). Also
-        allows runner hostname to be inputted manually (otherwise will default
-        to platform.node() value).
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds (or forever if
+        conn_timeout is set to -1). Also allows runner hostname to be inputted
+        manually (otherwise will default to platform.node() value).
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalExporter&#34;, process_name, log_level)
         self.subs = set()
         self.proc_name = process_name
         self.runner_host = runner_host
-        self.failed_conn_attempts = 0
-        if not existing_redis_conn:
-            self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
-            self.conn_type = &#34;new&#34;
-        else:
-            self.redis = existing_redis_conn
-            self.conn_type = &#34;existing&#34;
+        self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         success = False
         while conn_timeout != 0:
             try:
@@ -256,15 +249,11 @@ class SignalExporter:
                 success = True
                 break
             except redis.ConnectionError:
-                self.failed_conn_attempts += 1
-                conn_timeout -= 1
                 time.sleep(1)
+                conn_timeout -= 1
+                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
-            self.logger.critical(
-                f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;
-            )
             raise redis.ConnectionError
-        self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
         self.init_listener = None
         self.legal_events = None
 
@@ -301,7 +290,6 @@ class SignalExporter:
         try:
             data = json.loads(response[&#34;data&#34;])
         except ValueError:
-            self.logger.debug(f&#34;Malformed &#39;data&#39; in this response message: {response}&#34;)
             return None
         if (
             &#34;responder_id&#34; not in data
@@ -424,7 +412,7 @@ class SignalExporter:
 
         if not skip_check and not event in self.legal_events:
             raise ValueError(
-                f&#34;Event {event} not one of legal events: {self.legal_events}&#34;
+                f&#34;Event {self.event} not one of legal events: {self.legal_events}&#34;
             )
 
         sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
@@ -461,7 +449,7 @@ class SignalExporter:
         if expected_resps:
             if not self._valid_str_list(expected_resps):
                 raise TypeError(
-                    &#34;&#39;expected_resps&#39; arg must be a list of string hostnames&#34;
+                    &#34;&#39;expected_hosts&#39; arg must be a list of string hostnames&#34;
                 )
             for resp in expected_resps:
                 self.subs.add(resp)
@@ -533,7 +521,6 @@ class SignalResponder:
 
     def __init__(
         self,
-        existing_redis_conn: redis.Redis = None,
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         responder_name: str = platform.node(),
@@ -542,18 +529,12 @@ class SignalResponder:
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets responder object fields and generates unique responder_id.
-        Allows for use of an existing Redis connection object or specification
-        of redis host/port. Will continue to attempt to connect to redis server
-        for conn_timeout seconds (or forever if conn_timeout is set to -1).
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds (or forever if
+        conn_timeout is set to -1).
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalResponder&#34;, responder_name, log_level)
-        self.failed_conn_attempts = 0
-        if not existing_redis_conn:
-            self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
-            self.conn_type = &#34;new&#34;
-        else:
-            self.redis = existing_redis_conn
-            self.conn_type = &#34;existing&#34;
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         success = False
         while conn_timeout != 0:
             try:
@@ -561,14 +542,10 @@ class SignalResponder:
                 success = True
                 break
             except redis.ConnectionError:
-                self.failed_conn_attempts += 1
-                conn_timeout -= 1
                 time.sleep(1)
+                conn_timeout -= 1
                 self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
-            self.logger.critical(
-                f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;
-            )
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
@@ -694,7 +671,7 @@ class SignalResponder:
 <dl>
 <dt id="state_signals.Response"><code class="flex name class">
 <span>class <span class="ident">Response</span></span>
-<span>(</span><span>responder_id: str, publisher_id: str, event: str, ras: Optional[int] = None, message: Optional[str] = None)</span>
+<span>(</span><span>responder_id: str, publisher_id: str, event: str, ras: Optional[int], message: Optional[str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Standard signal response protocol payload. All required fields, defaults,
@@ -738,8 +715,8 @@ method for converting object data to json string.</p>
     responder_id: str
     publisher_id: str
     event: str
-    ras: Optional[int] = None
-    message: Optional[str] = None
+    ras: Optional[int]
+    message: Optional[str]
 
     def __post_init__(self) -&gt; None:
         &#34;&#34;&#34;
@@ -987,7 +964,7 @@ method for converting object data to json string.</p>
 </dd>
 <dt id="state_signals.SignalExporter"><code class="flex name class">
 <span>class <span class="ident">SignalExporter</span></span>
-<span>(</span><span>process_name: str, existing_redis_conn: redis.client.Redis = None, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = platform.node(), conn_timeout: int = 20, log_level: str = 'INFO')</span>
+<span>(</span><span>process_name: str, redis_host: str = 'localhost', redis_port: int = 6379, runner_host: str = platform.node(), conn_timeout: int = 20, log_level: str = 'INFO')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A signal management object for tools that wish to publish event/state signals.
@@ -995,11 +972,10 @@ Also handles subscriber recording and response reading/awaiting. Uses the standa
 signal protocol for all published messages. Easy-to-use interface for publishing
 legal signals and handling responders.</p>
 <p>init: Sets exporter object fields and generates unique publisher_id.
-Allows for use of an existing Redis connection object or specification
-of redis host/port. Will continue to attempt to connect to redis server
-for conn_timeout seconds (or forever if conn_timeout is set to -1). Also
-allows runner hostname to be inputted manually (otherwise will default
-to platform.node() value).</p></div>
+Allows for specification of redis host/port. Will continue to attempt
+to connect to redis server for conn_timeout seconds (or forever if
+conn_timeout is set to -1). Also allows runner hostname to be inputted
+manually (otherwise will default to platform.node() value).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1015,7 +991,6 @@ to platform.node() value).</p></div>
     def __init__(
         self,
         process_name: str,
-        existing_redis_conn: redis.Redis = None,
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         runner_host: str = platform.node(),
@@ -1024,23 +999,17 @@ to platform.node() value).</p></div>
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets exporter object fields and generates unique publisher_id.
-        Allows for use of an existing Redis connection object or specification
-        of redis host/port. Will continue to attempt to connect to redis server
-        for conn_timeout seconds (or forever if conn_timeout is set to -1). Also
-        allows runner hostname to be inputted manually (otherwise will default
-        to platform.node() value).
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds (or forever if
+        conn_timeout is set to -1). Also allows runner hostname to be inputted
+        manually (otherwise will default to platform.node() value).
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalExporter&#34;, process_name, log_level)
         self.subs = set()
         self.proc_name = process_name
         self.runner_host = runner_host
-        self.failed_conn_attempts = 0
-        if not existing_redis_conn:
-            self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
-            self.conn_type = &#34;new&#34;
-        else:
-            self.redis = existing_redis_conn
-            self.conn_type = &#34;existing&#34;
+        self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         success = False
         while conn_timeout != 0:
             try:
@@ -1048,15 +1017,11 @@ to platform.node() value).</p></div>
                 success = True
                 break
             except redis.ConnectionError:
-                self.failed_conn_attempts += 1
-                conn_timeout -= 1
                 time.sleep(1)
+                conn_timeout -= 1
+                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
-            self.logger.critical(
-                f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;
-            )
             raise redis.ConnectionError
-        self.pub_id = process_name + &#34;-&#34; + str(uuid.uuid4())
         self.init_listener = None
         self.legal_events = None
 
@@ -1093,7 +1058,6 @@ to platform.node() value).</p></div>
         try:
             data = json.loads(response[&#34;data&#34;])
         except ValueError:
-            self.logger.debug(f&#34;Malformed &#39;data&#39; in this response message: {response}&#34;)
             return None
         if (
             &#34;responder_id&#34; not in data
@@ -1216,7 +1180,7 @@ to platform.node() value).</p></div>
 
         if not skip_check and not event in self.legal_events:
             raise ValueError(
-                f&#34;Event {event} not one of legal events: {self.legal_events}&#34;
+                f&#34;Event {self.event} not one of legal events: {self.legal_events}&#34;
             )
 
         sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
@@ -1253,7 +1217,7 @@ to platform.node() value).</p></div>
         if expected_resps:
             if not self._valid_str_list(expected_resps):
                 raise TypeError(
-                    &#34;&#39;expected_resps&#39; arg must be a list of string hostnames&#34;
+                    &#34;&#39;expected_hosts&#39; arg must be a list of string hostnames&#34;
                 )
             for resp in expected_resps:
                 self.subs.add(resp)
@@ -1343,7 +1307,7 @@ input of expected responders (subscribers) as well as a tag.</p></div>
     if expected_resps:
         if not self._valid_str_list(expected_resps):
             raise TypeError(
-                &#34;&#39;expected_resps&#39; arg must be a list of string hostnames&#34;
+                &#34;&#39;expected_hosts&#39; arg must be a list of string hostnames&#34;
             )
         for resp in expected_resps:
             self.subs.add(resp)
@@ -1471,7 +1435,7 @@ as well as any included response messages.</p>
 
     if not skip_check and not event in self.legal_events:
         raise ValueError(
-            f&#34;Event {event} not one of legal events: {self.legal_events}&#34;
+            f&#34;Event {self.event} not one of legal events: {self.legal_events}&#34;
         )
 
     sig = self._sig_builder(event=event, sample=sample, tag=tag, metadata=metadata)
@@ -1521,7 +1485,7 @@ Wipes the subscriber list and publishes a shutdown message.</p></div>
 </dd>
 <dt id="state_signals.SignalResponder"><code class="flex name class">
 <span>class <span class="ident">SignalResponder</span></span>
-<span>(</span><span>existing_redis_conn: redis.client.Redis = None, redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = platform.node(), conn_timeout: int = 20, log_level: str = 'INFO')</span>
+<span>(</span><span>redis_host: str = 'localhost', redis_port: int = 6379, responder_name: str = platform.node(), conn_timeout: int = 20, log_level: str = 'INFO')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A signal management object for tools that wish to respond to event/state signals.
@@ -1529,9 +1493,9 @@ Can be used both for listening for signals as well as responding to them. Also
 allows for locking onto specific tags/publisher_ids. Uses the standard signal
 response protocol for all published messages.</p>
 <p>init: Sets responder object fields and generates unique responder_id.
-Allows for use of an existing Redis connection object or specification
-of redis host/port. Will continue to attempt to connect to redis server
-for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
+Allows for specification of redis host/port. Will continue to attempt
+to connect to redis server for conn_timeout seconds (or forever if
+conn_timeout is set to -1).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1546,7 +1510,6 @@ for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
 
     def __init__(
         self,
-        existing_redis_conn: redis.Redis = None,
         redis_host: str = &#34;localhost&#34;,
         redis_port: int = 6379,
         responder_name: str = platform.node(),
@@ -1555,18 +1518,12 @@ for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
     ) -&gt; None:
         &#34;&#34;&#34;
         init: Sets responder object fields and generates unique responder_id.
-        Allows for use of an existing Redis connection object or specification
-        of redis host/port. Will continue to attempt to connect to redis server
-        for conn_timeout seconds (or forever if conn_timeout is set to -1).
+        Allows for specification of redis host/port. Will continue to attempt
+        to connect to redis server for conn_timeout seconds (or forever if
+        conn_timeout is set to -1).
         &#34;&#34;&#34;
         self.logger = _create_logger(&#34;SignalResponder&#34;, responder_name, log_level)
-        self.failed_conn_attempts = 0
-        if not existing_redis_conn:
-            self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
-            self.conn_type = &#34;new&#34;
-        else:
-            self.redis = existing_redis_conn
-            self.conn_type = &#34;existing&#34;
+        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         success = False
         while conn_timeout != 0:
             try:
@@ -1574,14 +1531,10 @@ for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
                 success = True
                 break
             except redis.ConnectionError:
-                self.failed_conn_attempts += 1
-                conn_timeout -= 1
                 time.sleep(1)
+                conn_timeout -= 1
                 self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
-            self.logger.critical(
-                f&#34;Failed to connect to redis after trying {self.failed_conn_attempts} times&#34;
-            )
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
