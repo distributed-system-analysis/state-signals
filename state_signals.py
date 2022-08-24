@@ -175,6 +175,7 @@ class SignalExporter:
     def __init__(
         self,
         process_name: str,
+        existing_redis_conn: redis.Redis = None,
         redis_host: str = "localhost",
         redis_port: int = 6379,
         runner_host: str = platform.node(),
@@ -183,17 +184,23 @@ class SignalExporter:
     ) -> None:
         """
         init: Sets exporter object fields and generates unique publisher_id.
-        Allows for specification of redis host/port. Will continue to attempt
-        to connect to redis server for conn_timeout seconds (or forever if
-        conn_timeout is set to -1). Also allows runner hostname to be inputted
-        manually (otherwise will default to platform.node() value).
+        Allows for use of an existing Redis connection object or specification
+        of redis host/port. Will continue to attempt to connect to redis server
+        for conn_timeout seconds (or forever if conn_timeout is set to -1). Also
+        allows runner hostname to be inputted manually (otherwise will default
+        to platform.node() value).
         """
         self.logger = _create_logger("SignalExporter", process_name, log_level)
         self.subs = set()
         self.proc_name = process_name
         self.runner_host = runner_host
-        self.pub_id = process_name + "-" + str(uuid.uuid4())
-        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.failed_conn_attempts = 0
+        if not existing_redis_conn:
+            self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+            self.conn_type = "new"
+        else:
+            self.redis = existing_redis_conn
+            self.conn_type = "existing"
         success = False
         while conn_timeout != 0:
             try:
@@ -201,11 +208,15 @@ class SignalExporter:
                 success = True
                 break
             except redis.ConnectionError:
-                time.sleep(1)
+                self.failed_conn_attempts += 1
                 conn_timeout -= 1
-                self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+                time.sleep(1)
         if not success:
+            self.logger.debug(
+                f"Failed to connect to redis after trying {self.failed_conn_attempts} times"
+            )
             raise redis.ConnectionError
+        self.pub_id = process_name + "-" + str(uuid.uuid4())
         self.init_listener = None
         self.legal_events = None
 
@@ -474,6 +485,7 @@ class SignalResponder:
 
     def __init__(
         self,
+        existing_redis_conn: redis.Redis = None,
         redis_host: str = "localhost",
         redis_port: int = 6379,
         responder_name: str = platform.node(),
@@ -482,12 +494,18 @@ class SignalResponder:
     ) -> None:
         """
         init: Sets responder object fields and generates unique responder_id.
-        Allows for specification of redis host/port. Will continue to attempt
-        to connect to redis server for conn_timeout seconds (or forever if
-        conn_timeout is set to -1).
+        Allows for use of an existing Redis connection object or specification
+        of redis host/port. Will continue to attempt to connect to redis server
+        for conn_timeout seconds (or forever if conn_timeout is set to -1).
         """
         self.logger = _create_logger("SignalResponder", responder_name, log_level)
-        self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.failed_conn_attempts = 0
+        if not existing_redis_conn:
+            self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+            self.conn_type = "new"
+        else:
+            self.redis = existing_redis_conn
+            self.conn_type = "existing"
         success = False
         while conn_timeout != 0:
             try:
@@ -495,10 +513,14 @@ class SignalResponder:
                 success = True
                 break
             except redis.ConnectionError:
-                time.sleep(1)
+                self.failed_conn_attempts += 1
                 conn_timeout -= 1
+                time.sleep(1)
                 self.redis = redis.Redis(host=redis_host, port=redis_port, db=0)
         if not success:
+            self.logger.debug(
+                f"Failed to connect to redis after trying {self.failed_conn_attempts} times"
+            )
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe("event-signal-pubsub")

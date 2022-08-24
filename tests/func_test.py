@@ -12,6 +12,7 @@ print(sys.path)
 import pytest
 import state_signals
 import time
+import redis
 from multiprocessing import Process
 
 
@@ -20,6 +21,7 @@ def _listener():
     responder = state_signals.SignalResponder(
         responder_name="fakeresp", log_level="DEBUG"
     )
+    assert responder.conn_type == "new"
     responder.lock_id(sig_ex.pub_id)
     for signal in responder.listen():
         if signal.tag == "bad":
@@ -68,8 +70,24 @@ def _cleanup():
     resp_proc.terminate()
 
 
+def test_existing_conns():
+    redis_conn = redis.Redis(host="localhost", port="6379", db=0)
+    try:
+        sig_ex_test = state_signals.SignalExporter(
+            "exist_conn", existing_redis_conn=redis_conn
+        )
+        sig_resp_test = state_signals.SignalResponder(existing_redis_conn=redis_conn)
+    except redis.ConnectionError:
+        assert 1 == 0
+    assert sig_ex_test.conn_type == "existing"
+    assert sig_resp_test.conn_type == "existing"
+    assert sig_ex_test.pub_id
+    assert sig_resp_test.responder_id
+
+
 def test_basic_start_sub_stop():
     _start_resp()
+    assert sig_ex.conn_type == "new"
     sub_check = _init()
     assert sig_ex.init_listener.is_alive()
     assert sub_check == 0
