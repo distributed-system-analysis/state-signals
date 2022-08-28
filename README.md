@@ -17,8 +17,12 @@ See full documentation [here](https://distributed-system-analysis.github.io/stat
 
 # Installation
 The state-signals PyPI package is available [here](https://pypi.org/project/state-signals)
+ - To install, run `pip install state-signals`
 
-To install, run `pip install state-signals`
+There are also state-signals RPMs available:
+ - For python 3.6, use `python36-state_signals`
+ - For python 3.7 or later, use `python3-state_signals`
+ - Both can be found [here](https://copr.fedorainfracloud.org/coprs/meyceoz/state-signals/builds/)
 
 # Requirements
 The use of this module requires the existence of an accessible redis server.
@@ -80,6 +84,6 @@ Testing
  - Run a `pip install` for `pytest` and `pytest-mock`
  - To run the tests, run `pytest -v` from the top-level
  - Any new test functions/scripts can be added into the `tests` folder
- - NOTE: You will need to run a local `redis-server` for the tests to pass
+ - NOTE: You will need to run a local `redis-server` for the functional tests to pass
 
  Both formatting checks and tests must pass for GH Actions to approve a commit
