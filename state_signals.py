@@ -524,6 +524,7 @@ class SignalResponder:
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe("event-signal-pubsub")
+        self.channel = self.subscriber.listen()
         self.responder_id = responder_name + "-" + str(uuid.uuid4()) + "-resp"
         self._locked_id = None
         self._locked_tag = None
@@ -574,7 +575,7 @@ class SignalResponder:
         Yield all legal published signals. If a specific tag/published_id
         was locked, only signals with those matching values will be yielded.
         """
-        for item in self.subscriber.listen():
+        for item in self.channel:
             data = self._parse_signal(item)
             if data and self._check_target(data):
                 signal = Signal(**data)
