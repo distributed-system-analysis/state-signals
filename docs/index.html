@@ -572,6 +572,7 @@ class SignalResponder:
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
+        self.channel = self.subscriber.listen()
         self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
         self._locked_id = None
         self._locked_tag = None
@@ -622,7 +623,7 @@ class SignalResponder:
         Yield all legal published signals. If a specific tag/published_id
         was locked, only signals with those matching values will be yielded.
         &#34;&#34;&#34;
-        for item in self.subscriber.listen():
+        for item in self.channel:
             data = self._parse_signal(item)
             if data and self._check_target(data):
                 signal = Signal(**data)
@@ -1585,6 +1586,7 @@ for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
             raise redis.ConnectionError
         self.subscriber = self.redis.pubsub(ignore_subscribe_messages=True)
         self.subscriber.subscribe(&#34;event-signal-pubsub&#34;)
+        self.channel = self.subscriber.listen()
         self.responder_id = responder_name + &#34;-&#34; + str(uuid.uuid4()) + &#34;-resp&#34;
         self._locked_id = None
         self._locked_tag = None
@@ -1635,7 +1637,7 @@ for conn_timeout seconds (or forever if conn_timeout is set to -1).</p></div>
         Yield all legal published signals. If a specific tag/published_id
         was locked, only signals with those matching values will be yielded.
         &#34;&#34;&#34;
-        for item in self.subscriber.listen():
+        for item in self.channel:
             data = self._parse_signal(item)
             if data and self._check_target(data):
                 signal = Signal(**data)
@@ -1712,7 +1714,7 @@ was locked, only signals with those matching values will be yielded.</p></div>
     Yield all legal published signals. If a specific tag/published_id
     was locked, only signals with those matching values will be yielded.
     &#34;&#34;&#34;
-    for item in self.subscriber.listen():
+    for item in self.channel:
         data = self._parse_signal(item)
         if data and self._check_target(data):
             signal = Signal(**data)
