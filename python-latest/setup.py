@@ -3,7 +3,7 @@ from pathlib import Path
 
 setup(
     name="python3-state_signals",
-    version="1.0.0",
+    version="1.0.1",
     description="Package for easy management of state/event signal publishing, subscribing, and responding",
     url="https://github.com/distributed-system-analysis/state-signals/",
     author="Mustafa Eyceoz",
