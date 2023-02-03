@@ -1,4 +1,7 @@
 # state-signals: the State/Event Signal Module
+
+[![Python application](https://github.com/distributed-system-analysis/state-signals/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/distributed-system-analysis/state-signals/actions/workflows/python-app.yml)
+
 A python package for handling state/event signals
 
 Adds two new, simple-to-use objects:
